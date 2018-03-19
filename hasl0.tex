@@ -25,7 +25,7 @@ HASL/0 is an implementation of the language which focusses on supporting all ele
 
 We make the distinction between minor and major premises: minor premises are statements about someone or something particular, e.g. Tweety, Socrates, and `the object' in our examples. Major premises are claims of a more general or generative nature: they are more rule-like and express expectations, for example that birds can fly or that men are mortal.
 
-Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches one of the part-of-speech tags from \autoref{table:postags}, and \texttt{`x'} to indicate that the token is just the string `x'.
+Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches one of the part-of-speech tags from \autoref{table:postags}, and \texttt{`x'} to indicate that the token is just the string `x'. Parts between square brackets are optional.
 
 \begin{table}
     \begin{tabular}{lll}
@@ -48,7 +48,7 @@ Minor and major premises we detect in HASL/0 using the following grammar. We use
 \end{table}
 
 \begin{enumerate}
-    \item `The man is mortal' and `Socrates is mortal'
+    \item `Tweety is a bird and `Socrates is not a man'
     \begin{grammar}
         <minor-premise> ::= <instance> <VBZ> [<RB>] <object>
     \end{grammar}
@@ -120,17 +120,15 @@ Instances are names, nouns which are preceded by a definite determiner (e.g. `th
 \alt <definite-dt> <NN>
 \alt <definite-dt> <NNP>
 
-<definite-dt> ::= `the' \alt `this'
+<definite-dt> ::= `the' | `this'
 \end{grammar}
 
 Prototypes are the indefinite variant of these. Since major premises both often occur as singular and as plural premises we add grammar rules for both. For minor premises we only implement the singular form.
 
 \begin{grammar}
-<prototype-sg> ::= <indefinite-dt> <NN>
-\alt <indefinite-dt> <NN> <vbn>
+<prototype-sg> ::= <indefinite-dt> <NN> [<vbn>]
 
-<prototype-pl> ::= <NNS>
-\alt <NNS> <vbn>
+<prototype-pl> ::= <NNS> [<vbn>]
 
 <indefinite-dt> ::= `a'
 \end{grammar}
@@ -151,11 +149,11 @@ Prototypes are the indefinite variant of these. Since major premises both often 
 
 <argument> ::= <premise> `but' <minor-premises> % a *~ b+
 
-<minor-premises> ::= <minor-premise>
-\alt <minor-premise-list> `and' <minor-premise>
+<minor-premises> ::= <minor-premise-list> `and' <minor-premise>
+\alt <minor-premise>
 
-<minor-premise-list> ::= <minor-premise>
-\alt <minor-premise-list> `,' <minor-premise>
+<minor-premise-list> ::= <minor-premise-list> `,' <minor-premise>
+\alt <minor-premise>
 \end{grammar}
 
 \noindent Using these rules we can already form all argument structures depicted in \autoref{fig:proscons}, either directly or by repeating premises in multiple sentences.
