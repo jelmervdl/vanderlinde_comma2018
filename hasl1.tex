@@ -72,7 +72,7 @@ In HASL/0 we already extracted individuals using specific grammar rules. We alte
 
 The data structure that describes these entities allows them to be described as a name, noun and pronoun. If an entity has been mentioned using both a name and a pronoun in the sentence, the final argument structure will have a data structure that has both these slots filled in.
 
-The anaphora resolution process itself is added to the merging of arguments, which now occurs at almost every level in the parse tree since all rules built upon \texttt{major-premise} and \texttt{minor-premise} yield these partial argument structures.
+The anaphora resolution process itself is added to the merging of arguments, which now occurs at almost every level in the parse tree since all rules built upon \texttt{major-premise} and \texttt{minor-premise} yield these partial argument structures. The resulting algorithm is similar to Hobbs' algorithm \cite{hobbs1978}.
 
 The process is redefined as follows:
 
