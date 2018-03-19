@@ -1,0 +1,51 @@
+paragraph{Recursion}
+
+Because HASL's argumentation scheme allows claims to be both on the sending and receiving end of a support or attack relation at the same time, it is only natural that HASL's language supports nesting arguments as well. This is achieved by allowing the claims that occur in the \texttt{support} and \texttt{attack} rule to be claims with supporting or attacking arguments attached to them.
+
+\begin{grammar}
+
+<claims> ::= <extended-specific-claims>
+
+<extended-specific-claim> ::= <specific-claim> <supports> <attack>
+
+\end{grammar}
+
+\begin{exe}
+	\ex\label{ex:c3} Tweety can fly because he is a bird because he has feathers.
+\end{exe}
+
+\noindent Example \ref{ex:c3} is a slight alteration of Examples \ref{ex:c1} and \ref{ex:c2} that shows this nesting. Here, Tweety has can fly because he is a bird, but Tweety being bird might be questioned as it needs additional support. This support comes in the form of the claim that Tweety has feathers which, in this argument, supports Tweety being a bird. \autoref{fig:c3} shows the argument as a diagram.
+
+\paragraph{Anaphora resolution}
+Pronominal Anaphora resolution---making the connection between `Henry', `the king', and `he', or `Tweety' and `he'---is added to allow one to write more natural sentences without the need of repeating a unique name for each individual in the argument. In the argument diagrams all pronouns are, when possible, rewritten as the name or proper noun of the individual they are referring to, since the argument diagram does not have or maintain the same order of claims, which would make finding out what a pronoun refers to more challenging.
+
+Anaphora resolution is done at every moment partial interpretations are combined, which is when a grammar rule is completely parsed. Each partial interpretation keeps a list of all distinct instances, and for each of these instances a list of occurrences in claims. These lists can be used to identify which current instance is connected to the instance observed in the various claims. The resulting tree-searching algorithm is similar to Hobbs' algorithm \cite{hobbs1978}.
+
+For example, in the sentence `Socrates is mortal because he is a man.', there is only one distinct instance in the final interpretation, namely Socrates. While parsing, both `Socrates' and `he' are observed as instances. So in the final interpretation, the list of observed instances associated with `Socrates' contains both these. By merging these, which in this example happens when the \texttt{expanded-specific-claim} rule finishes, a new instance is created which contains both the name `Socrates' and the pronoun `he'. When drawing the graph, the terminals `Socrates' and `he' can be looked up in the lists and it can be determined that these refer to the same subject. This can then be displayed in the graph (e.g. by associating and printing the same number next to each terminal that refers to this instance).
+
+When merging partial interpretations, if two separate instances are believed to be referring to the same subject, a new canonical instance is created and added to the list with distinct, canonical instances. Then, this new instance is associated with the two merged (previously canonical) instances and all other (non-canonical) instances that were already associated with these two.
+
+For anaphora resolution it is important to know which of the instances came first in the order of the words of a sentence. For example, it is likely that in the sentence `John said he saw a deer.' `he' refers to `John', but in the sentence `He said John saw a deer' `He' is probably not referring to `John'.
+
+\paragraph{Scopes}
+The condition claims in rules make use of the \emph{individual} atom in the subject slot of a claim to connect them to each other. To make the sentences readable the noun `something' or `all' is used to name these singular and plural individuals. During the anaphora resolution step this can cause problems, as the `something' from one of these individuals might be linked to the `something' from another one, as would normally happen when individuals repeat the same noun. To counter this individuals inside general claims are assigned a scope, and the scope is limited to the general claim. Individuals with a different scope cannot be merged.
+
+\begin{exe}
+	\ex\label{gramscopes} Socrates is mortal because he is a man. Achilles is mortal because he is a man.
+	\ex Socrates is mortal because he is a man and because Achilles is mortal because he is a man. (Bit forced example, but shows how `he is a man' is treated as two different premises, even though the words are the same.)
+\end{exe}
+
+\paragraph{Enthymeme resolution}
+Often, the general claims accepted by HASL/1's grammar can be interpreted as rules, for example in arguments which build upon simple deductive reasoning, like the examples with Tweety and Socrates, but also for example legal language, where an argument consists of multiple conditions which have to be met for a law to be applicable. This structured form of warrants can be used to help with enthymemes: arguments in which the datum or the warrant, or the minor or major clause is left out. In the case of legal rules, it can identify which conditions have been met, and which have not been mentioned.
+
+\begin{exe}
+	\ex\label{ex:enthymin} Socrates is mortal because he is a man.
+	\ex\label{ex:enthymaj} Socrates is mortal because men are mortal.
+\end{exe}
+
+\noindent These sentences are two sentences which respectively the major and minor clause are left out. By looking at the two remaining clauses the missing clause can be reconstructed, or assumed. (The used algorithm is simple, but only appropriate for syllogisms that do not occur often in natural argumentation \cite{saintDizierStede2017}.)
+
+Internally, the conditions of a rule-like major claim are attached to the major claim through a \emph{condition} relation. This type of relation is similar to an attack or support relation, but is only used inside a warrant. This is also done for general claims in the form `All men are mortal', which are represented as, for example, `Something is mortal' with the conditional claim `Something is a man'. As a result, when we have sentence \ref{ex:enthymaj}, generating the assumed specific claim `Socrates is a man' is done based on all condition relations of the general claim `men are mortal', which in this case is only `Something is a man'. The subject, `Socrates', is matched with that of the conclusion and the resulting premise, `Socrates is a man' and the supporting relation is added.
+
+Note that this also works for arguments with warrants with multiple conditions or arguments with multiple claims together supporting the conclusion. In the first case, a minor claim will be constructed for every condition and all these claims together will support the conclusion. In the second case, a condition will be generated for every claim supporting the conclusion via the relation that is missing the major claim.
+

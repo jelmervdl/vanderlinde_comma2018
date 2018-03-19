@@ -1,4 +1,3 @@
-\subsection{HASL/1}
 HASL/1 improves upon HASL/0 by allowing recursion in the argument structure, helping constructions such as the chained support (\autoref{fig:chained}). Furthermore we add pronominal anaphora resolution to remove pronouns from the premises in the argument graph. Finally we use anaphora resolution to add enthymeme resolution by reconstructing the missing premises.
 
 \paragraph{Recursion}
@@ -9,7 +8,7 @@ For recursion to work we need to define what the salient part of an argument is 
 
 For the elemental premises, \texttt{minor-premise} and \texttt{major-premise}, there is no question to where the salient premise is as there is only one premise in these structures. For the argued versions of these, for example a minor premise that is also the conclusion of a support relation, we make the conclusion the salient premise. The salient premise is denoted with an exclamation mark in the grammars.
 
-\paragrah{Support}
+\paragraph{Support}
 \begin{grammar}
 <argued-minor-premise> ::= <minor-premise> `because' <argued-minor-premises> % a! <- b+
 
@@ -94,11 +93,11 @@ To determine whether an entity refers to another entity the matching in \autoref
 
 \begin{table}
     \begin{tabular}{r|ccc|}
-                & name  & noun  & pronoun
+                & name  & noun  & pronoun \\
         \hline
         pronoun &       &       & $\eq$ \\
         noun    &       & $\eq$ & yes \\
-        name    & $\eq$ &       & yes
+        name    & $\eq$ &       & yes \\
         \hline
     \end{tabular}
     \caption{Pronoun resolution lookup table. To determine whether they should be merged we look at the referring entity and move to the first column for which it has a value. The first test in that column that can be applied will determine the result. If none can be applied, the entities will not be merged. In case of a pronoun the entities are only merged if the first-occurring entity has a matching pronoun or no pronoun at all.}

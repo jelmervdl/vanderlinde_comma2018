@@ -1,4 +1,3 @@
-\subsection{HASL/0}
 HASL/0 is an implementation of the language which focusses on supporting all elements of the argument structure. Combining sentences (or structures) in to larger arguments is done by repeating the premise, not unlike repeating a variable in first-order logic.
 
 \paragraph{Parser} Sentences are tokenized and to each of the tokens a part-of-speech tag (pos-tag) is assigned using spaCy. The tokens are then parsed into argument structures using an Earley parser and the grammar described in this section.
@@ -26,7 +25,7 @@ HASL/0 is an implementation of the language which focusses on supporting all ele
 
 We make the distinction between minor and major premises: minor premises are statements about someone or something particular, e.g. Tweety, Socrates, and `the object' in our examples. Major premises are claims of a more general or generative nature: they are more rule-like and express expectations, for example that birds can fly or that men are mortal.
 
-Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{\<X\>} with upper case $X$ to denote a token that matches a part-of-speech tag, and \texttt{`x'} to indicate that the token is just the string `x'.
+Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches a part-of-speech tag, and \texttt{`x'} to indicate that the token is just the string `x'.
 
 \begin{enumerate}
     \item `The man is mortal' and `Socrates is mortal'
@@ -170,7 +169,7 @@ There is no \texttt{major-premise-list} or a way to add multiple major premises 
 \end{exe}
 
 \paragraph{Discussion}
-Other structures, such as the chaining or arguments (\autoref{fig:chained}) and two arguments attacking each other (\autoref{fig:mutual}} are verbose to express:
+Other structures, such as the chaining or arguments (\autoref{fig:chained}) and two arguments attacking each other (\autoref{fig:mutual}) are verbose to express:
 
 \begin{exe}
     \ex\label{ex:hasl0tbw} Tweety can fly because he is a bird. He is a bird because he has wings.

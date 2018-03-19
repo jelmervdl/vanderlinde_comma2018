@@ -1,0 +1,287 @@
+The first iteration of HASL tests the idea of using a grammar that describes the structure of an argument in a sentence to interpret the textual argument. This idea is similar to parsing the syntactic structure in a sentence -- a common practise in natural language processing -- except the resulting structure does not describe which verb is the main verb in a sentence, it instead describes which claim is supported by which other claim.
+
+HASL/0 is a first implementation of the idea to use the grammar and parser to parse directly to (partial) argument diagrams. The parse algorithm used here is selected for its support for ambiguity: some sentences might be interpretable in multiple ways. Selecting or preferring one of these interpretations is not the goal HASL, instead HASL will find all interpretations that are possible according to its grammar, however unlikely they may be. Selecting a preferred interpretation is a problem for a different project.
+
+\paragraph{Data structure}
+
+The data structure used by HASL is the combination of a graph, and of a tree consisting of nuclei and atoms as defined by Rhetorical Structure Theory (RST). We call this structure a partial interpretation. Specifically, it consists of:
+
+\begin{itemize}
+	\item Claims: The boxes of the argument diagram. Each claim consists of:
+	\begin{itemize}
+		\item Text: the text of the claim
+	\end{itemize}
+	\item Relations: The arrows between boxes and other arrows in the argument diagram. Each relation consists of:
+	\begin{itemize}
+		\item Sources: one or more \emph{Claims} from which the relation originates. E.g. in a support relation this would be the supporting claim.
+		\item Target: a \emph{Claim} or \emph{Relation} that is the supported or attacked box or arrow.
+		\item Type: either \texttt{attack} or \texttt{support}, drawn as a cross or an arrowhead at the tip of the arrow.
+	\end{itemize}
+	\item Nucleus: \emph{Claim} or \emph{Relation} that is the top-most element of the local sentence structure. Often this is the only \emph{Claim} that is not the source of any relations, but only a target.
+\end{itemize}
+
+\paragraph{Claims} Claims are the smallest sentence segments that can be interpreted as a single claim. Every box in the argument diagram, composed of the elements described in \autoref{fig:bb}, is a claim. For example, in the sentence `Tweety can fly because Tweety is a bird and birds can fly.', the three claims are: `Tweety can fly', `Tweety is a bird', and `birds can fly' (\autoref{fig:bbwarrantex}).
+
+\paragraph{Relations} The claims can be linked via relations, the arrows shown in the argument diagrams. Each relation is of a specific type, e.g. an attack or support relation. It has one or more sources, each a claim in the partial interpretation. The multiple sources case covers \autoref{fig:bbcombined}. Relations can target either a claim---covering the diagrams Figures \ref{fig:bbsupport} and \ref{fig:bbattack}---or another relation, necessary to describe Figures \ref{fig:bbwarrant}, \ref{fig:bbundercuttingdefeater} and \ref{fig:bbirrelevantwarrant}.
+
+\paragraph{Nucleus} The top most claim or relation (referred to as the \emph{nucleus} in RST) is the top most element of a partial interpretation (it is the root of the argument diagram for the partial interpretation) and it is the claim or relation that is the subject in any further use of the partial interpretation.
+
+Some grammar rules yield a partial interpretation which an incomplete relation as nucleus. The partial interpretation is constructed from bottom to top: first the smallest sentence segments are incorporated into a partial interpretation, then they are combined into larger partial interpretations. In this combination process it may happen that the sources of a support relation are already part of the partial interpretation, but the target is yet unknown.
+
+\subsection{Parsing textual arguments}
+The parsing process translates the argumentative text to an argument stored in the described representation. The process consists of three steps: Tokenizing, parsing and combining the results of the parse into an argument.
+
+\paragraph{Tokenizing} First the sentence has to be split into words and symbols: tokens. The sentence ``The bird has wings.'' will be split into the tokens `The', `bird', `has', `wings' and `.'. This is done by splitting the sentence on white space characters and by taking non-alphanumeric characters that are followed by white space (or the end of a sentence) and making a list of all these matching elements.
+
+\paragraph{Parsing} The grammar consists of a set of named grammar rules. Each rule has a name and a list of constituents, that refer either to other rules or to terminals. Terminals are special rules that match a token (a single word or a symbol). As their name already hints at, they are at the ends of a parse.
+
+Grammar rules are rules on how to write a sentence. For example, a rule for how to write a subject (a noun phrase) of a sentence dictates that it should consist of a determiner followed by a noun. A rule that describes how to write a determiner says it should be the word `The', and another rule which also describes the determiner might say it should be the word `a'. These last two rules are terminals: they do not delegate to other grammar rules.
+
+A grammar that describes the example `Tweety has wings.' can be written as follows:
+
+\begin{grammar}
+<sentence> ::= <claim> <stop>
+
+<claim> ::= <subj> <verb> <obj>
+
+<subj> ::= `Tweety'
+
+<verb> ::= `has'
+
+<obj> ::= `wings'
+
+<stop> ::= `.'
+\end{grammar}
+
+The parsing process itself is implemented as a chart parser.
+
+\paragraph{Ambiguity} Often there are multiple terminals that match a token, and in this case all possible terminals are tried. The same applies for rules: if multiple rules can be applied, all these separate avenues are explored. This is also the mechanism which cases ambiguity to be allowed: if there are multiple ways to parse a sentence, all of them are explored. So whether `the man saw the woman with the looking glass' either was using a looking glass or observed that a woman had a looking glass, both interpretations are found, given that the grammar rules to parse both exist.
+
+\paragraph{Heuristics for terminals} The grammar has to cover every sentence of words that HASL can encounter. If a sentence cannot be described using the grammar, it cannot be processed. We do not want to define for every possible word what type of terminal it might be, so instead we use a set of heuristics to determine what type of terminal each word might be. For example, a singular noun is detected by taking a word, applying a set of rules \cite{deSmedtDaelemans2012} to get the singular form of that word, and then confirming the word remained the same. A name has to start with an upper-case character. This approach can err on the side of allowing too many words onto a certain terminal type, but the parser dealing with all possible parses will stop most of these errors from having any influence as there are no grammar rules to match them with.
+
+\paragraph{Parsing arguments} The example grammar of the previous section is an example of a definition of the \texttt{claim} rule HASL uses. A single claim is equal to a box in the argument diagram. Claims are the building blocks of arguments, and in a sense arguments are little more than claims that are connected through relations that attack and support each other. This is reflected in the argument diagrams and the data structure.
+
+In HASL/0 the ways claims can be combined into an argumentative sentence are limited, and the way the grammar distinguishes between different interpretations is mainly using discourse markers: keywords such as `because', `but', and `except'. Discourse markers are a strong indicator for the type of connection between claims \cite{lawrenceReed2015}.
+
+We can add two very basic rules to the previous example grammar to cover basic direct support and attack relations:
+
+\begin{grammar}
+
+<sentence> ::= <claim> <support-marker> <claim> <stop>
+
+<sentence> ::= <claim> <attack-marker> <claim> <stop>
+
+<support-marker> ::= `because'
+
+<attack-marker> ::= `except'
+
+<attack-marker> ::= `but'
+
+\end{grammar}
+
+For the next step we need to go from the parse tree to the argument structure. The argument structure is similar to the argument diagram in that it consists of a set of claims and a set of relations, but it may be incomplete or contain additional supporting information used by a rule higher up in the parse tree.
+
+We change all rules in the grammar that deal with arguments instead of syntax---starting with \texttt{<claim>} and all rules that directly or indirectly refer to that rule---to not only store the instantiation of a rule while parsing, but also an argument structure that contains all the arguments of that parsed part of text.
+
+For example, parsing the part `The bird can fly' yields an argument structure with a single claim, as does parsing the part `the bird has wings'. The \texttt{<sentence>} rule that groups these two together also takes these two data structures and creates a new argument structure, merging all claims from both the claims and adding a support-relation between them, in which the second claim supports the first claim. This is the final argument structure the parse of the sentence yields, and from this structure the argument diagram can be drawn.
+
+\paragraph{Direct and indirect arguments}
+ 
+We want to make a distinction between direct and indirect arguments, or the datum and the warrant of an argument. The datum is a specific claim, talking about this particular situation. The warrant is a more general claim, a rule that is generally true given some conditions are met. The most basic examples are syllogisms:
+
+\begin{exe}
+	\ex Tweety can fly because birds can fly and Tweety is a bird.
+\end{exe}
+
+\noindent Here, the warrant is the general claim `birds can fly' and the datum is the specific claim `Tweety is a bird', specific because it talks about this scenario, not the general case.
+
+The previous method of detecting specific parts in an argument based on markers won't work here because there are no markers specific for a warrant. To deal with this, we need to make a distinction between the two types of claims they incorporate: specific claims and general claims. Specific claims belong to the datum, and general claims to the warrant.
+
+This distinction between specific and general is made based on the subject of a claim: it is regarded as specific if it is a name, a noun preceded by `the', or a pronoun. There also need to be grammar rules for the general claims. These have a subject that is a plural noun or a singular noun preceded by `a'.
+
+\begin{grammar}
+
+<specific-claim> ::= <specific-subj> <verb> <obj>
+
+<general-claim> ::= <general-subj> <verb> <obj>
+
+<specific-subj> ::= `the' <noun>
+
+<specific-subj> ::= <name>
+
+<specific-subj> ::= <pronoun>
+
+<general-subj> ::= `a' <noun>
+
+<general-subj> ::= <plural-noun>
+
+\end{grammar}
+
+\noindent After this distinction is made, we can use these two different types of claims to specify the kind of relation between them in the grammar, and vary how the specific and general claim are combined.
+
+\begin{grammar}
+
+<sentence> ::= <specific-claim> <support-marker> <specific-claim> <stop>
+
+<sentence> ::= <specific-claim> <support-marker> <general-claim> <stop>
+
+<sentence> ::= <specific-claim> <support-marker> <general-claim> `and' <specific-claim> <stop>
+
+\end{grammar}
+
+\noindent A sentence matching each one of these would result in a different argument diagram, respectively \autoref{fig:bbsupport}, \autoref{fig:bbdanglingwarrant} and \autoref{fig:bbwarrant}.
+
+\paragraph{Multiple claims supporting or attacking together} As of yet an argument can consist of a claim and an argument, and additionally a warrant. However we need a way to indicate that some claims only serve as a supporting argument when used together. To do this we extend the use of conjunctions in the grammar:
+
+\begin{grammar}
+
+<sentence> ::= <specific-claim> <support-marker> <claims> <stop>
+
+%Just 'A'
+<claims> ::= <specific-claim>
+
+%'... and B'
+<claims> ::= <claim-list> `and' <specific-claim>
+
+%'A and B'
+<claim-list> ::= <specific-claim>
+
+%'A, B and C'
+<claim-list> ::= <claim-list> `,' <specific-claim>
+
+\end{grammar}
+
+The rule \texttt{claims} now matches multiple specific claims, which then combined form the source of an attack or support relation in the context of the sentence.
+
+However, in this version we lose the option to have a warrant as no \texttt{general-claim} can occur in this list. We create two more variants of the last three rules to have either the first or the last occurrence of a claim be a general claim. This is sufficient as the warrant almost always occurs as either the first or the last claim in a sentence.
+
+\paragraph{Combining multiple sentences} The grammar so far only yields separate argument diagrams for each sentence, but a textual argument might encompass multiple sentences:
+
+\begin{exe}
+	\ex\label{ex:m1} Tweety can fly because Tweety is a bird. Tweety can fly because I saw it.
+	\ex\label{ex:m2} Tweety can fly because Tweety is a bird. Tweety is a bird because Tweety has wings.
+\end{exe}
+
+A grammar to support multiple sentences uses recursion to parse one or multiple sentences and combine the resulting data structures into a single argument structure. The recursion in the grammar works via multiple rules with the same name: one for the last occurrence of the pattern---the base case---and one for all previous iterations of the pattern---the recursive case, which refers to itself.
+
+\begin{grammar}
+<sentences> ::= <sentence> <sentences>
+
+<sentences> ::= <sentence>
+\end{grammar}
+
+\noindent In the instantiation of the recursive rule, the data structures are merged by combining the two sets of claims and the two sets of relations. If a claim occurs in both sets, only one occurrence is kept and all relations referring to the other occurrence are updated to refer to the remaining one. After merger, Sentences \ref{ex:m1} and \ref{ex:m2} are interpreted as shown in Figures \ref{fig:m1} and \ref{fig:m2}.
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+			\Tree [.sentence
+				[.claim
+					[.subj [.det The ] [.noun bird ] ]
+					[.verb can ]
+					[.obj fly ] ]
+				[.support-marker because ]
+				[.claim
+					[.subj [.det the ] [.noun bird ] ]
+					[.verb has ]
+					[.obj wings ] ]
+				[.stop . ] ]
+		\caption{Parse tree}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {The bird can fly};
+			\node[box] (pre) at (0, -1) {the bird has wings};
+			\draw[->] (pre) to (con);
+		\end{tikzpicture}
+		\caption{Argument diagram}
+	\end{subfigure}
+	\figsentence{The bird can fly because the bird has wings.}
+	\caption{Pro in HASL/0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+			\Tree [.argument
+			[.sentence
+				[.attacked-claim
+					[.specific-claim
+						[.instance
+							[.name
+								[.You ] ] ]
+						[.should ]
+						[.action-inf
+							[.verb-inf
+								[.buy ] ]
+							[.instance*
+								[.instance
+									[.the ]
+									[.noun [.car ] ] ] ] ] ]
+					[.but ]
+					[.specific-claims
+						[.specific-claim
+							[.instance
+								[.the ]
+								[.noun [.color ] ] ]
+							[.is ]
+							[.category
+								[.noun*
+									[.noun [.ugly ] ] ] ] ] ] ]
+				[.. ] ] ]
+		\caption{Parse tree}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {You should buy the car};
+			\node[box] (pre) at (0, -1) {The colour is ugly};
+			\draw[->] (pre) to (con);
+		\end{tikzpicture}
+		\caption{Argument diagram}
+	\end{subfigure}
+	\figsentence{You should buy the car but the colour is ugly.}
+	\caption{Con in HASL/0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\Tree [.argument
+				[.sentence
+					[.supported-claim
+						[.supported-claim-with-warrant
+							[.specific-claim \edge[roof]; {Tweety can fly} ]
+							[.because ]
+							[.specific-claims-conditional-first
+								[.specific-claims-conditional-first-rest
+									[.conditional-claim \edge[roof]; {birds can fly} ] ]
+								[.and ]
+								[.specific-claim \edge[roof]; {Tweety is a bird} ] ] ] ]
+					[.. ] ] ]
+		\end{tikzpicture}
+		\caption{Parse tree}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box] (war) at (2, -1.5) {birds can fly};
+			\node[box] (pre) at (0, -3) {Tweety is a bird};
+			\node[coordinate] (w) at (0, -1.5) {};
+			\draw[->] (pre) -- (w) -> (con);
+			\draw[->] (war) -> (w);
+		\end{tikzpicture}
+		\caption{Argument diagram}
+	\end{subfigure}
+	\figsentence{Tweety can fly because birds can fly and Tweety is a bird.}
+\end{figure}
+
