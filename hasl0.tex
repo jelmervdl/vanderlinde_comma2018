@@ -21,7 +21,7 @@ HASL/0 is an implementation of the language which focusses on supporting all ele
 <argument> ::= <premise> `but' <minor-premise> % *> a *~ b
 \end{grammar}
 
-\noindent After parsing the rule in a text the argument structure is formed. If we use $a$ and $b$ to denote the text that matched \texttt{<premise>} and \texttt{<minor-premise>} we can describe the argument yielded by matching the first rule as follows: It consists of two premises, $a$ and $b$, and a relation $a <~ b$.
+\noindent After parsing the rule in a text the argument structure is formed. If we use $a$ and $b$ to denote the text that matched \texttt{<premise>} and \texttt{<minor-premise>} we can describe the argument yielded by matching the first rule as follows: It consists of two premises, $a$ and $b$, and a relation $b$ supports $a$.
 
 We make the distinction between minor and major premises: minor premises are statements about someone or something particular, e.g. Tweety, Socrates, and `the object' in our examples. Major premises are claims of a more general or generative nature: they are more rule-like and express expectations, for example that birds can fly or that men are mortal.
 
@@ -75,7 +75,7 @@ Minor and major premises we detect in HASL/0 using the following grammar. We use
     \end{grammar}
 \end{enumerate}
 
-These rules are supported by definitions for \texttt{object}, \texttt{instance} and the singular and plural versions of \texttt{prototype}. 
+\noindent These rules are supported by definitions for \texttt{object}, \texttt{instance} and the singular and plural versions of \texttt{prototype}. 
 
 Objects are often the objects of sentences:
 
@@ -112,7 +112,7 @@ Objects are often the objects of sentences:
     \end{grammar}
 \end{enumerate}
 
-Instances are names, nouns which are preceded by a definite determiner (e.g. `the', `this') and pronouns referring to them such as `he' and `it'.
+\noindent Instances are names, nouns which are preceded by a definite determiner (e.g. `the', `this') and pronouns referring to them such as `he' and `it'.
 
 \begin{grammar}
 <instance> ::= <NNP>
