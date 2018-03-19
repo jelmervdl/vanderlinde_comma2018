@@ -1,0 +1,58 @@
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con1) at (-.5,0) {$A$};
+			\node[box] (per1) at (-.5,-1) {$B$};
+			\node[box] (con2) at (.5,0) {$C$};
+			\node[box] (per2) at (.5,-1) {$D$};
+			\draw[->] (per1) -- (con1);
+			\draw[->] (per2) -- (con2);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ and $C$ because $D$.}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {$A$};
+			\node[box] (per1) at (-.5,-1) {$B$};
+			\node[box] (per2) at (.5,-1) {$C$};
+			\node[box] (per3) at (.5,-2) {$D$};
+			\draw[->] (per1) -- ++(0,.4) -| (con);
+			\draw[->] (per2) -- ++(0,.4) -| (con);
+			\draw[->] (per3) -> (per2);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ and $C$ because $D$.}
+	\end{subfigure}
+	\caption{Ambiguous cases with recursion and conjunction}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {$A$};
+			\node[box] (per1) at (0,-1) {$B$};
+			\node[box] (per2) at (0,-2) {$C$};
+			\draw[->] (per1) -> (con);
+			\draw[-x] (per2) -> (per1);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ but $C$.}
+		\caption{}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {$A$};
+			\node[box] (per1) at (-.5,-1) {$B$};
+			\node[box] (per2) at (.5,-1) {$C$};
+			\draw[->] (per1.north) -- ++(0,.2) -| ([xshift=-0.1cm]con.south);
+			\draw[-x] (per2.north) -- ++(0,.2) -| ([xshift=0.1cm]con.south);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ but $C$.}
+		\caption{}
+	\end{subfigure}
+	\caption{Ambiguous cases with recursion and rules}
+\end{figure}

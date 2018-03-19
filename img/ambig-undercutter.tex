@@ -1,0 +1,34 @@
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.33\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {$A$};
+			\node[box] (war) at (1, -2) {$C$};
+			\node[box] (pre) at (0, -3) {$B$};
+			\node[box] (und) at (1, -1) {$D$};
+			\node[coordinate] (u) at (0, -1) {};
+			\node[coordinate] (w) at (0, -2) {};
+			\draw[->] (pre) -- (w) -- (u) -> (con);
+			\draw[->] (war) -> (w);
+			\draw[-x] (und) -> (u);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ and $C_{maj}$ but $D$.}
+		\caption{Undercutter}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.33\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {$A$};
+			\node[box] (per1) at (-.5,-1) {$B$};
+			\node[box] (per2) at (.5,-1) {$C$};
+			\node[box] (per3) at (.5,-2) {$D$};
+			\draw[->] (per1) -- ++(0,.4) -| (con);
+			\draw[->] (per2) -- ++(0,.4) -| (con);
+			\draw[-x] (per3) -> (per2);
+		\end{tikzpicture}
+		\figsentence{$A$ because $B$ and $C_{min}$ but $D$.}
+		\caption{Almost ambiguous}
+	\end{subfigure}
+	\caption{Argument diagram building blocks for rules}
+\end{figure}
