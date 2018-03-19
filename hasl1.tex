@@ -95,9 +95,9 @@ To determine whether an entity refers to another entity the matching in \autoref
     \begin{tabular}{r|ccc|}
                 & name  & noun  & pronoun \\
         \hline
-        pronoun &       &       & $\eq$ \\
-        noun    &       & $\eq$ & yes \\
-        name    & $\eq$ &       & yes \\
+        pronoun &       &       & =  \\
+        noun    &       & =     & yes \\
+        name    & =     &       & yes \\
         \hline
     \end{tabular}
     \caption{Pronoun resolution lookup table. To determine whether they should be merged we look at the referring entity and move to the first column for which it has a value. The first test in that column that can be applied will determine the result. If none can be applied, the entities will not be merged. In case of a pronoun the entities are only merged if the first-occurring entity has a matching pronoun or no pronoun at all.}
