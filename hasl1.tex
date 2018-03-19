@@ -1,0 +1,152 @@
+\subsection{HASL/1}
+HASL/1 improves upon HASL/0 by allowing recursion in the argument structure, helping constructions such as the chained support (\autoref{fig:chained}). Furthermore we add pronominal anaphora resolution to remove pronouns from the premises in the argument graph. Finally we use anaphora resolution to add enthymeme resolution by reconstructing the missing premises.
+
+\paragraph{Recursion}
+In most cases we only allow recursion at the end of the sentence to make the behaviour of how sentences are interpreted more predictable. For this reason we make the distinction between for example \texttt{minor-premise} and \texttt{argued-minor-premise}, where the first is similar to the one defined in HASL/0. The latter allows the supporting premises to be supported by arguments themselves.
+
+\paragraph{Salience}
+For recursion to work we need to define what the salient part of an argument is once an argument is parsed, and we need to mind the order in which arguments are merged together. Each rule applied during parsing now yields both a (partial) argument containing all premises and relations encountered so far, and the salient premise. For some structures, such as \texttt{minor-premise-list}, this salient premise is a list of premises.
+
+For the elemental premises, \texttt{minor-premise} and \texttt{major-premise}, there is no question to where the salient premise is as there is only one premise in these structures. For the argued versions of these, for example a minor premise that is also the conclusion of a support relation, we make the conclusion the salient premise. The salient premise is denoted with an exclamation mark in the grammars.
+
+\paragrah{Support}
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise> `because' <argued-minor-premises> % a! <- b+
+
+<argued-minor-premises> ::= <minor-premise-list> `and' <argued-minor-premise>
+\alt <argued-minor-premise>
+
+<minor-premise-list> ::= <minor-premise-list> `,' <minor-premise>
+\alt <minor-premise>
+\end{grammar}
+
+\noindent Since we only want recursion to happen at the end of the sentence, \texttt{minor-premise-list} only allows the last premise to be of the argued variety.
+
+Additionally, minor premises without additional argumentation are also accepted in the places where argued minor premises are allowed.
+
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise>
+\end{grammar}
+
+\noindent The grammar for major premises is adapted likewise.
+
+\begin{grammar}
+<argued-major-premise> ::= <major-premise> `because' <argued-minor-premises> % a! <~ b+
+    \alt <major-premise>
+\end{grammar}
+
+\paragraph{Independent support}
+In HASL/0 we could construct independent support structures (\autoref{fig:independent}) by repeating the conclusion. We now add the syntax to allow us to leave out the repeated conclusion.
+
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise> <supports>
+
+<support> ::= `because' <argued-minor-premise>
+
+<supports> ::= <support-list> `and' <support>
+
+<support-list> ::= <support-list> `,' <support>
+\alt <support>
+\end{grammar}
+
+\paragraph{Attack}
+The way attacks are expressed is a little different. To allow for mixing supporting and attacking relations to be expressed in the same sentence, we add variants of \texttt{argued-minor-premise} and \texttt{argued-major-premise} that are attacked. However, in text, `but' often only occurs after `because' and we have little expectation of what premise in the exposition so far it will be attacking. To stay true to this behaviour, we allow the attacked premise to be argued itself, unlike in the grammar for support relations.
+
+\begin{grammar}
+<argued-minor-premise> ::= <argued-minor-premise> `but' <argued-minor-premise> % a! *~ b
+
+<argued-major-premise> ::= <argued-major-premise> `but' <argued-minor-premise> % a! *~ b
+\end{grammar}
+
+\noindent The grammars that express support and attack relations now function the same way as the grammar that expresses a premise: both return a salient premise. Arguments can be expressed as either of these. Incidentally, this also allows for arguments to consist only of premises, without any argumentation.
+
+\begin{grammar}
+<argument> ::= <argued-major-premise>
+\alt <argued-minor-premise>
+\end{grammar}
+
+\paragraph{Mutual attack}
+In HASL/0 we already parsed premises with negations in them, but we have not used them yet to automatically create a mutual attack relation (\autoref{fig:mutual}) when these two attack each other. To allow this to happen we alter the processing of the \texttt{minor-premise} rules that match negated premises to add the flag \emph{negated=True} to the premise. We then also alter the \texttt{argued-minor-premise} rule that matches an attack relation between two minor premises to create two relations if premises share the same subject, verb and object but one of them has the negated flag set and the other does not.
+
+\paragraph{Anaphora resolution}
+In HASL/0 we already extracted individuals using specific grammar rules. We alter these to yield a more informative data structure for these entities instead of spans of text.
+
+The data structure that describes these entities allows them to be described as a name, noun and pronoun. If an entity has been mentioned using both a name and a pronoun in the sentence, the final argument structure will have a data structure that has both these slots filled in.
+
+The anaphora resolution process itself is added to the merging of arguments, which now occurs at almost every level in the parse tree since all rules built upon \texttt{major-premise} and \texttt{minor-premise} yield these partial argument structures.
+
+The process is redefined as follows:
+
+\begin{enumerate}
+    \item All premises from both arguments to be merged are added to the list as a pair consisting of the premise id and the premise itself.
+    \item All entities occurring in the premises are extracted from this list and added to a similar list, with pairs of their id and the entity itself.
+    \item This list with entities is sorted on the position where the entity first occurred in the input text.
+    \item For each entity in the list it is compared to all the following entities to check whether that entity could be referring to it.
+    \item If so, the entities are merged, the new merged entity is added to the table, and all occurrences of the two merged entities is replaced with the new entity.
+    \item All premises are updated to refer to the new entities using the entity replacement list that has just been constructed. These updated premises are also added to the list with premises. 
+    \item From here on the process is the same as for HASL/0.
+    \item Each premise that occurs multiple times in the list is then replaced with the first occurrence.
+    \item The list is used to replace all occurrences of the replaced premises with their replacement in the relations.
+    \item The resulting set of unique premises and up-to-date relations is used to create a new argument, the result which is yielded after finishing the grammar rule.
+\end{enumerate}
+
+To determine whether an entity refers to another entity the matching in \autoref{table:anaphoraresolution} is used. On the left we have the initial entity. On the top we have the possibly referring entity (which occurred later in the text).
+
+\begin{table}
+    \begin{tabular}{r|ccc|}
+                & name  & noun  & pronoun
+        \hline
+        pronoun &       &       & $\eq$ \\
+        noun    &       & $\eq$ & yes \\
+        name    & $\eq$ &       & yes
+        \hline
+    \end{tabular}
+    \caption{Pronoun resolution lookup table. To determine whether they should be merged we look at the referring entity and move to the first column for which it has a value. The first test in that column that can be applied will determine the result. If none can be applied, the entities will not be merged. In case of a pronoun the entities are only merged if the first-occurring entity has a matching pronoun or no pronoun at all.}
+    \label{table:anaphoraresolution}
+\end{table}
+
+In the argument diagram the entities are printed using their most descriptive designation, so preferably their name, then their noun, and otherwise their pronoun. In case of enthymeme resolution where anonymous entities are created they are displayed as `something'.
+
+\paragraph{Enthymeme resolution}
+Enthymemes occur often, and visualising them helps with the understanding of arguments. By doing enthymeme resolution in the same state as the duplication of premises we also add the option to involve minor and major premises that are mentioned in the argument, but not in the places we expect them, into our arguments.
+
+Enthymeme resolution will construct one of the three premises (minor, major, conclusion) of a syllogism in case the other two are present. To do this we need to interpret the major premises in a different, more rule-like manner.
+
+\begin{exe}
+    \ex\label{ex:enthbf} birds can fly
+    \ex\label{ex:enthmm} men are mortal
+    \ex\label{ex:enthifbf} something can fly if it is a bird
+    \ex\label{ex:enthifmm} something is a man if it is mortal
+\end{exe}
+
+We alter the processing of the \texttt{major-premise} rules in the grammar. For example, examples~\ref{ex:enthbf} and~\ref{ex:enthmm} are how we now write major premises, and we store these in a similar way, i.e. with `birds' as subject. We change this to storing them as rules as read in examples~\ref{ex:enthifbf} and~\ref{ex:enthifmm}, replacing the subject with an unspecified entity that occurs as the subject of the major premise and all conditions. The original subject is now reformed as a condition.
+
+The major premise data structure extends the original premise data structure by adding a slot for conditions. These conditions themselves are premises, but they do not take part in the argument diagram.
+
+We also add grammar rules for arguments where one of the three premises is missing. In each of these the other two are used to construct the third, and each of the rules will yield a (partial) argument that has all three present.
+
+\paragraph{Missing minor premises}
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise> `because' <argued-major-premise> % (a! <~ ?) <~ b
+\end{grammar}
+
+\noindent The missing minor premises are reconstructed from the subject of the conclusion and the conditions of the major premise. For each of the conditions a minor premise is created with the subject of the conclusion and these constructed minor premises are linked to the conclusion using a support relation. This relation is then supported by a support relation originating from the major premise.
+
+\paragraph{Missing major premises}
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise> `because' <argued-minor-premises> % (a! <~ b) <~ ?
+\end{grammar}
+
+\noindent The major premise can be reconstructed from the minor premises by creating a condition for each of the minor premises and copying the verb and object from the conclusion to the new major premise.
+
+\paragraph{Missing conclusion}
+\begin{grammar}
+<argued-minor-premise> ::= <minor-premise-list> `and' <argued-major-premise> % (?! <~ a) <~ b
+\end{grammar}
+
+\noindent The conclusion is reconstructed by taking the subject from one of the minor premises and the verb and object from the major premise. We use the subject from the first minor premise as we assume they either all have the same subject or the one most relevant is mentioned first. The constructed major premise is then also the salient premise of this argument.
+
+\paragraph{Discussion}
+Adding recursion will add multiple ways to express the same argument as well as adding multiple ways to interpret argumentative sentences. `a because b but c' can now be interpreted in three ways, but this isn't unexpected..
+
+Major premise data structure is a bit of a missed opportunity. Better would be to have the conditions be part of the argument and define semantics for them so that they can also be added and discussed in the argument itself. Also necessary for Tort.
