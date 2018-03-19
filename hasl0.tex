@@ -1,6 +1,6 @@
 HASL/0 is an implementation of the language which focusses on supporting all elements of the argument structure. Combining sentences (or structures) in to larger arguments is done by repeating the premise, not unlike repeating a variable in first-order logic.
 
-\paragraph{Parser} Sentences are tokenized and to each of the tokens a part-of-speech tag (pos-tag) is assigned using spaCy. The tokens are then parsed into argument structures using an Earley parser and the grammar described in this section.
+\paragraph{Parser} Sentences are tokenized and to each of the tokens a part-of-speech tag (pos-tag) is assigned using spaCy\cite{spacy2}. The tokens are then parsed into argument structures using an Earley parser and the grammar described in this section.
 
 \paragraph{Argument structure} The partial and final argument structures are represented as a graph with nodes and edges, or premises and relations, with a few notable differences: First, a relation can have multiple premises as source to model Cooperative supporting relations between premises (\autoref{fig:cooperative}). Second, a relation can target another relation. This is needed to encode the warranted support relation (\autoref{fig:warrantedsupport}).
 
