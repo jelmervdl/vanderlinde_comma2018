@@ -25,7 +25,27 @@ HASL/0 is an implementation of the language which focusses on supporting all ele
 
 We make the distinction between minor and major premises: minor premises are statements about someone or something particular, e.g. Tweety, Socrates, and `the object' in our examples. Major premises are claims of a more general or generative nature: they are more rule-like and express expectations, for example that birds can fly or that men are mortal.
 
-Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches a part-of-speech tag, and \texttt{`x'} to indicate that the token is just the string `x'.
+Minor and major premises we detect in HASL/0 using the following grammar. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches one of the part-of-speech tags from \autoref{table:postags}, and \texttt{`x'} to indicate that the token is just the string `x'.
+
+\begin{table}
+    \begin{tabular}{ll}
+        Tag & Description & Example \\
+        \hline
+        NN  & noun, singular & bird \\
+        NNS & noun, plural & birds \\
+        NNP & noun, proper singular & Socrates \\
+        MD  & verb, modal auxiliary & can \\
+        VBZ & verb, 3rd person singular present \\
+        VBP & verb, non-3rd person singular present & are \\
+        VBN & verb, past particle & illuminated \\
+        DT  & determiner & the, a \\
+        JJ  & adjective & red \\
+        IN  & preposition & in, on, by \\
+        RB  & adverb & not
+    \end{tabular}
+    \caption{Part-of-speech tags used in HASL, part of the Penn Treebank tag set.}
+    \label{table:postags}
+\end{table}
 
 \begin{enumerate}
     \item `The man is mortal' and `Socrates is mortal'
