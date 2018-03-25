@@ -1,0 +1,525 @@
+HASL is an implementation of the language which focusses on supporting all elements of the argument structure. Combining sentences (or structures) in to larger arguments is done by repeating the premise, not unlike repeating a variable in first-order logic.
+
+\paragraph{Parser} Sentences are tokenized and to each of the tokens a part-of-speech tag (pos-tag) is assigned using spaCy\cite{spacy2}. The tokens are then parsed into argument structures using an Earley parser and the grammar described in this section.
+
+\paragraph{Argument structure} The partial and final argument structures are represented as a graph with nodes and edges, or claims and relations, with a few notable differences: First, a relation can have multiple claims as source to model Cooperative supporting relations between claims (\autoref{fig:cooperative}). Second, a relation can target another relation. This is needed to encode the warranted support relation (\autoref{fig:warrantedsupport}).
+
+\paragraph{Merging arguments} At the end of every grammar rule the matched structures are merged. For rules that combine a few words into an \emph{object} this merely involves combining the spans of text into a single span that encompasses both (i.e. `the' + `man' becomes `the man') but when combining sentences the argument structures need to be merged. During this merge claims that were repeated in the text are merged into a single node in the argument graph.
+
+\begin{enumerate}
+    \item All claims from both arguments to be merged are added to the list as a pair consisting of the claims id and the claim itself.
+    \item Each claim that occurs multiple times in the list is then replaced with the first occurrence.
+    \item The list is used to replace all occurrences of the replaced claims with their replacement in the relations.
+    \item The resulting set of unique claims and up-to-date relations is used to create a new argument, the result which is yielded after finishing the grammar rule.
+\end{enumerate}
+
+\subsection{Pros and cons}
+Support relations between claims (\autoref{fig:support}) are the basis of argumentation: These indicate a reason to come to a certain conclusion.
+
+Attack relations (\autoref{fig:attack}) indicate that a claim is, or has at some moment in the argumentative text been, disputed. The attack can be mutual: two claims exclude the possibility of each other, for example Socrates being mortal and Socrates being immortal. We draw these as two relations collapsed into one bidirectional one, shown in \autoref{fig:mutual}.
+
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (pre) at (0, -1) {$B$};
+            \draw[->] (pre) to (con);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$.}
+        \caption{Support}
+        \label{fig:support}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (att) at (0, -1) {$B$};
+            \draw[-x] (att) to (con);
+        \end{tikzpicture}
+        \figsentence{$A$ but $B$.}
+        \caption{Attack}
+        \label{fig:attack}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (att) at (0, -1) {$\neg A$};
+            \draw[xx] (att) to (con);
+        \end{tikzpicture}
+        \figsentence{$A$. $\neg A$.}
+        \caption{Mutual attack}
+        \label{fig:mutual}
+    \end{subfigure}
+    \caption{Pros and Cons}
+    \label{fig:proscons}
+\end{figure}
+
+\paragraph{Grammar} We start with describing the grammar for the basic support and attack relations (Figures~\ref{fig:support} and~\ref{fig:attack}).
+
+\begin{grammar}
+<argument> ::= <claim> `because' <minor-claim> % *> a <~ b
+
+<argument> ::= <claim> `but' <minor-claim> % *> a *~ b
+\end{grammar}
+
+\noindent After parsing the rule in a text the argument structure is formed. If we use $a$ and $b$ to denote the text that matched \texttt{<claim>} and \texttt{<minor-claim>} we can describe the argument yielded by matching the first rule as follows: It consists of two claims, conclusion $a$ and premise $b$, and a relation $b$ supports $a$ (\autoref{fig:support}).
+
+Attacks (\autoref{fig:attack}) are parsed in a similar way, but with a different type of relation. Mutual attacks (\autoref{fig:mutual}) are written by writing two separate attack statements:
+
+\begin{exe}
+    \ex\label{ex:mutualsoc} Socrates is mortal but Socrates is immortal. Socrates is immortal but Socrates is mortal.
+\end{exe}
+
+
+\paragraph{Major and minor claims}
+We make the distinction between minor and major claims: minor claims are statements about someone or something particular, e.g. Tweety, Socrates, and `the object' in our examples. Major claims are claims of a more general or generative nature: they are more rule-like and express expectations, for example that birds can fly or that men are mortal.
+
+Minor and major claims are recognized in HASL using the following grammar rules. We use \texttt{<x>} with lower case $x$ to refer to other grammar rules, \texttt{<X>} with upper case $X$ to denote a token that matches one of the part-of-speech tags from \autoref{table:postags}, and \texttt{`x'} to indicate that the token is just the string `x'. Segments between square brackets are optional.
+
+\begin{table}
+    \begin{tabular}{lll}
+        Tag & Description & Example \\
+        \hline
+        NN  & noun, singular & bird \\
+        NNS & noun, plural & birds \\
+        NNP & noun, proper singular & Socrates \\
+        MD  & verb, modal auxiliary & can \\
+        VBZ & verb, 3rd person singular present & is \\
+        VBP & verb, non-3rd person singular present & are \\
+        VBN & verb, past particle & illuminated \\
+        DT  & determiner & the, a \\
+        JJ  & adjective & red \\
+        IN  & preposition & in, on, by \\
+        RB  & adverb & not
+    \end{tabular}
+    \caption{Part-of-speech tags used in HASL, part of the Penn Treebank tag set.}
+    \label{table:postags}
+\end{table}
+
+\begin{enumerate}
+    \item `Tweety is a bird and `Socrates is not a man'
+    \begin{grammar}
+        <minor-claim> ::= <instance> <VBZ> [<RB>] <object>
+    \end{grammar}
+    \item `Tweety can fly'
+    \begin{grammar}
+        <minor-claim> ::= <instance> <MD> [<RB>] <VB>
+    \end{grammar}
+
+    \item `A man is mortal'
+    \begin{grammar}
+        <major-claim> ::= <prototype-sg> <VBZ> [<RB>] <object>
+    \end{grammar}
+    \item `A bird can fly'
+    \begin{grammar}
+        <major-claim> ::= <prototype-sg> <MD> [<RB>] <VB>
+    \end{grammar}
+    \item Men are mortal
+    \begin{grammar}
+        <major-claim> ::= <prototype-pl> <VBP> [<RB>] <object>
+    \end{grammar}
+    \item Birds can fly
+    \begin{grammar}
+        <major-claim> ::= <prototype-pl> <MD> [<RB>] <VB>
+    \end{grammar}
+\end{enumerate}
+
+\noindent These rules are supported by definitions for \texttt{instance}, \texttt{object} and the singular and plural versions of \texttt{prototype}. These are defined in their own rules to make the major and minor claim rules more general. Effectively, minor claims begin with \texttt{instance}, major claims with \texttt{prototype}.
+
+Objects are often the objects of sentences, although the rule is also reused for the parsing of prepositional phrases:
+
+\begin{enumerate}
+    \item `wings' in `Tweety has wings'
+    \begin{grammar}
+        <object> ::= <NN> \alt <NNS>
+    \end{grammar}
+
+    \item `red' in `the object is red'
+    \begin{grammar}
+        <object> ::= <JJ>
+    \end{grammar}
+
+    \item `the object' or `an object'
+    \begin{grammar}
+        <object> ::= <DT> <NN>
+    \end{grammar}
+
+    \item `the red light'
+    \begin{grammar}
+        <object> ::= <DT> <JJ> <NN>
+    \end{grammar}
+
+    \item `born in Bermuda' or `illuminated by a red light' for `the light is …'
+    \begin{grammar}
+        <object> ::= <vbn>
+
+        <vbn> ::= <VBN>
+        \alt <VBN> <preposition-phrase>
+
+        <preposition-phrase> ::= <IN> <NNP>
+        \alt <IN> <object>
+    \end{grammar}
+\end{enumerate}
+
+\noindent Instances are names, nouns which are preceded by a definite determiner (e.g. `the', `this') and pronouns referring to them such as `he' and `it'.
+
+\begin{grammar}
+<instance> ::= <NNP>
+\alt <PRP>
+\alt <definite-dt> <NN>
+\alt <definite-dt> <NNP>
+
+<definite-dt> ::= `the' | `this'
+\end{grammar}
+
+\noindent Prototypes are the indefinite variant of these. Since major premises both often occur as singular and as plural premises we add grammar rules for both. For minor premises we have only added rules for the singular form.
+
+\begin{grammar}
+<prototype-sg> ::= <indefinite-dt> <NN> [<vbn>]
+
+<prototype-pl> ::= <NNS> [<vbn>]
+
+<indefinite-dt> ::= `a'
+\end{grammar}
+
+\paragraph{Sentences} Finally, an argumentative text in HASL's language consists of one or more sentences which combine the argument structures into a single argument diagram. Effectively a sentence is an argument ending with a period, and \texttt{sentences} is the top-most element of the parse tree.
+
+\begin{grammar}
+<sentences> ::= <sentences> <sentence>
+    \alt <sentence>
+
+<sentence> ::= <argument> `.'
+\end{grammar}
+
+\subsection{Conjunctions}
+
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (per1) at (-.5,-1) {$B$};
+            \node[box] (per2) at (.5,-1) {$C$};
+            \draw[->] (per1) -- ++(0,.4) -| (con);
+            \draw[->] (per2) -- ++(0,.4) -| (con);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$ and $C$.}
+        \caption{Linked support}
+        \label{fig:linked}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (per1) at (-.5,-1) {$B$};
+            \node[box] (per2) at (.5,-1) {$C$};
+            \draw[->] (per1) -- ++(0,.4) -| ([xshift=-0.1cm]con.south);
+            \draw[->] (per2) -- ++(0,.4) -| ([xshift=0.1cm]con.south);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$ and because $C$.}
+        \caption{Multiple support}
+        \label{fig:multiple}
+    \end{subfigure}
+    \begin{subfigure}[b]{.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (per1) at (0,-1) {$B$};
+            \node[box] (per2) at (0,-2) {$C$};
+            \draw[->] (per2) -> (per1);
+            \draw[->] (per1) -> (con);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$ because $C$.}
+        \caption{Chained support}
+        \label{fig:chained}
+    \end{subfigure}
+    \caption{Conjunctions}
+    \label{fig:conjunctions}
+\end{figure}
+
+Arguments can be supported or attacked by multiple premises in three different ways, as shown in \autoref{fig:conjunctions}. First, multiple premises can together support the conclusion, implying that attacking one of the premises is sufficient to undermine the conclusion. Second, multiple premises can independently support the conclusion, where attacking one premise does not affect the support of the others on the conclusion. Lastly, the supporting premise itself can be supported.
+
+The grammar for supporting and attacking claims is extended to allow a conclusion to be supported or attacked by multiple premises as shown in the diagrams in Figures~\ref{fig:linked}.
+
+\begin{grammar}
+<argument> ::= <claim> `because' <minor-claims> % a <~ b+
+
+<argument> ::= <claim> `but' <minor-claims> % a *~ b+
+
+<minor-claims> ::= <minor-claim-list> `and' <minor-claim>
+\alt <minor-claim>
+
+<minor-claim-list> ::= <minor-claim-list> `,' <minor-claim>
+\alt <minor-claim>
+\end{grammar}
+
+\noindent Multiple support (\autoref{fig:multiple}) and chained support (\autoref{fig:chained}) can be expressed using multiple sentences.
+
+\subsection{Rules, warrants, generalizations}
+Warranted support and attack combines the usage of the major and minor premise.
+
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (war) at (1, -1.5) {$C$};
+            \node[box] (pre) at (0, -3) {$B$};
+            \node[coordinate] (w) at (0, -1.5) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$ and $C_{maj}$.}
+        \caption{Warranted support}
+        \label{fig:warrantedsupport}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (war) at (1, -1.5) {$C$};
+            \node[box] (pre) at (0, -3) {$B$};
+            \node[coordinate] (w) at (0, -1.5) {};
+            \draw[-x] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{$A$ but $B$ and $C_{maj}$.}
+        \caption{Warranted attack}
+        \label{fig:warrantedattack}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (war) at (1, -2) {$C$};
+            \node[box] (pre) at (0, -3) {$B$};
+            \node[box] (und) at (1, -1) {$D$};
+            \node[coordinate] (u) at (0, -1) {};
+            \node[coordinate] (w) at (0, -2) {};
+            \draw[->] (pre) -- (w) -- (u) -> (con);
+            \draw[->] (war) -> (w);
+            \draw[-x] (und) -> (u);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$ and $C_{maj}$ but $D$.}
+        \caption{Undercutter}
+        \label{fig:undercutter}
+    \end{subfigure}
+    \caption{Support using rules and attack thereof}
+\end{figure}
+
+\begin{grammar}
+<argument> ::= <claim> `because' <minor-claim-list> `and' <major-claim> % (a <~ b+) <~ c
+
+<argument> ::= <claim> `because' <major-claim> `and' <minor-claims> % (a <~ c+) <~ b
+
+<argument> ::= <claim> `but' <minor-claim-list> `and' <major-claim> % (a *~ b+) <~ c
+
+<argument> ::= <claim> `but' <major-claim> `and' <minor-claims> % (a *~ c+) <~ b
+\end{grammar}
+
+\noindent These rules add two relations to the argument: one linked relation from the minor premises supporting or attacking the conclusion, and a relation from the major premise supporting the previous linked relation.
+
+Note that \texttt{minor-claim-list} and \texttt{minor-claims} can also consist of only a single claim. There is no \texttt{major-claim-list} or a way to add multiple major premises to a support relation as we only expect at most one major premise to be relevant per relation.
+
+\paragraph{Undercutter}
+We need an extra rule to express the undercutter, as we currently have no way to express an attack on a relation. We allow both major and minor claims as the attacking claim since there is no need to make the distinction.
+
+\begin{grammar}
+<argument> ::= <claim> `because' <minor-claim-list> `and' <major-claim> `but' <claim> % (a <~ b+) *~ c
+
+<argument> ::= <claim> `because' <major-claim> `and' <minor-claims> `but' <claim> % (a <~ b+) *~ c
+\end{grammar}
+
+\subsection{Collapsed arguments}
+The grammar thus far is unambiguous: There is only one way for each of the elements of the argument structure to be expressed. For simple examples it is very effective:
+
+\begin{exe}
+    \ex Socrates is mortal because he is a man and men are mortal.
+    \ex The object is red because the object appears red but it is illuminated by a red light.
+\end{exe}
+
+\noindent Other structures, such as the chaining or arguments (\autoref{fig:chained}) and two arguments attacking each other (\autoref{fig:mutual}) are verbose to express:
+
+\begin{exe}
+    \ex\label{ex:hasl0tbw} Tweety can fly because he is a bird. He is a bird because he has wings.
+    \ex\label{ex:hasl0tbnottb} Tweety is a bird but Tweety is not a bird. Tweety is not a bird but Tweety is a bird.
+\end{exe}
+
+\noindent All argument constructions can be formulated with the grammar that has been presented, but some constructions, such as chained support (\autoref{fig:chained}), are less intuitive to formulate because every sentence can consist of only one argumentative statement.
+
+We extend the grammar to also allow argumentative statements to occur inside sentences. I.e. a conclusion from one statement can be the premise in the next.
+
+In most cases we only allow these argumentative statements, which we call major and minor arguments, at the end of the sentence to make the behaviour of how sentences are interpreted more predictable. Since we need to make a distinction between major and minor claims for the warranted support and attack relations, we also need to inherit this distinction in the argumentative statements. Hence we call them \texttt{minor-argument} and \texttt{major-argument} to reflect that their conclusion is respectively a minor or major claim.
+
+\paragraph{Support}
+To limit the ambiguity of how supporting clauses can be interpreted, we only allow the repetition of supported conclusions functioning as a supporting premise to happen at the end of the sentence. Therefore \texttt{minor-arguments} only allows the last claim to be of the argued variety.
+
+\begin{grammar}
+<minor-argument> ::= <minor-claim> `because' <minor-arguments> % a! <- b+
+    \alt <minor-claim>
+
+<minor-arguments> ::= <minor-claim-list> `and' <minor-argument>
+\alt <minor-argument>
+
+<minor-claim-list> ::= <minor-claim-list> `,' <minor-claim>
+\alt <minor-claim>
+\end{grammar}
+
+\noindent The grammar for major premises is adapted likewise.
+
+\begin{grammar}
+<major-argument> ::= <major-claim> `because' <minor-arguments> % a! <~ b+
+    \alt <major-claim>
+\end{grammar}
+
+\paragraph{Multiple support}
+In our grammar thus far we can construct multiple support structures (\autoref{fig:multiple}) by writing multiple sentences and repeating the conclusion. We add the syntax to allow us to leave out the repeated conclusion.
+
+\begin{grammar}
+<minor-argument> ::= <minor-claim> <reasons>
+
+<reasons> ::= <reason-list> `and' <reason>
+
+<reason-list> ::= <reason-list> `,' <reason>
+\alt <reason>
+
+<reason> ::= `because' <minor-argument>
+\end{grammar}
+
+\noindent Note that the difference between sentences with linked support and multiple support is the repetition of `because' in each of the separate reasons.
+
+\paragraph{Attack}
+The way attacks are expressed is a little different. To allow for mixing supporting and attacking relations to be expressed in the same sentence, we add variants of \texttt{minor-argument} and \texttt{major-argument} that are attacked. However, in text, `but' often only occurs after `because' and we have little expectation of what premise in the exposition so far it will be attacking. To stay true to this behaviour, we allow the attacked premise to be argued itself, unlike in the grammar for support relations. We also only allow the attack argument to occur as an argument (i.e. a sentence) on its own to limit the number of possible ambiguous but unlikely interpretations. Forming chained attacks (like \autoref{fig:chained}) however is allowed.
+
+\begin{grammar}
+<argument> ::= <minor-argument> `but' <argument> % a! *~ b
+
+<argument> ::= <major-argument> `but' <argument> % a! *~ b
+\end{grammar}
+
+\noindent The grammar rules that express support and attack relations function the same way as the grammar rules that express a single claim. The conclusion of the argument will function as a premise for the next. At the sentence level it does not matter whether the conclusion an argument is a major or minor claim. We remove this distinction at that level using the following rule:
+
+\begin{grammar}
+<argument> ::= <major-argument> | <minor-argument>
+\end{grammar}
+
+\paragraph{Mutual attack}
+In our grammar we already parse claims with negations in them (the optional \texttt{RB} element in many of the \texttt{major-premise} and \texttt{minor-premise} rules), but we do not use this information yet to automatically create a mutual attack relation (\autoref{fig:mutual}) when these two attack each other.
+
+To allow for this we alter the processing of the \texttt{minor-claim} rules that match negated claims to add the flag \emph{negated=True} to the claim. We then also alter the \texttt{argument} and \texttt{minor-argument} rules that match an attack relation between two minor claims to create two relations (effectively a bidirectional relation) if the claims share the same subject, verb and object but one of them has the negated flag set and the other does not. This allows us to only write one sentence instead of both in example~\ref{ex:mutualsoc}.
+
+\subsection{Anaphora resolution}
+Currently the pronouns that occur in the input are copied to the boxes in the argument diagram, but this makes the argument more difficult to understand as the order of the sentence, which we normally use to resolve these anaphora, is no longer present. Furthermore, the grammar to express multiple support or attack relations depend on recognizing the repetition of the conclusion, but if the first occurrence of the conclusion contains a name, and the second a pronoun which is an anaphora for that name, the exact text of both claims is different.
+
+We already identify the names and pronouns in our grammar. We alter the rules for claims to also incorporate information on the entity that occurs in the subject of a claim for the purpose of connecting these entities later on.
+
+The data structure that describes these entities allows them to be described as a name, noun and pronoun. If an entity has been mentioned using both a name and a pronoun in the sentence, the final argument structure will have a data structure that has both these slots filled in.
+
+The anaphora resolution process itself is added to the merging of arguments, which occurs at almost every level in the parse tree since all rules built upon \texttt{major-argument} and \texttt{minor-argument} yield these partial argument structures in which multiple claims can occur. The resulting algorithm is similar to Hobbs' algorithm \cite{hobbs1978}.
+
+\begin{figure}[ht!]
+    \centering
+    \begin{tikzpicture}
+        \Tree [.{Entity(name=Socrates, pronoun=he)} [.{Entity(name=Socrates)} ] `because' [.{Entity(pronoun=he)} ] ]
+    \end{tikzpicture}
+    \caption{Anaphora resolution inside the parse tree}
+    \label{fig:anaphoraresolution}
+\end{figure}
+
+The process is redefined as follows:
+
+\begin{enumerate}
+    \item All claims from both arguments to be merged are added to the list as a pair consisting of the premise id and the premise itself.
+    \item All entities occurring in the claims are extracted from this list and added to a similar list, with pairs of their id and the entity itself.
+    \item This list with entities is sorted on the position where the entity first occurred in the input text.
+    \item For each entity in the list it is compared to all the following entities to check whether that entity could be referring to it.
+    \item If so, the entities are merged, the new merged entity is added to the table, and all occurrences of the two merged entities is replaced with the new entity.
+    \item All claims are updated to refer to the new entities using the entity replacement list that has just been constructed. These updated claims are also added to the list with id-claim pairs.
+    \item Each claim that occurs multiple times in the list is then replaced with the first occurrence of it in the list. The test to determine whether two claims are the same depend on the updated entities.
+    \item The list is used to replace all occurrences of the replaced claims with their replacement in the relations.
+    \item The resulting set of unique claims and up-to-date relations is used to create a new argument, the result which is yielded after finishing the grammar rule.
+\end{enumerate}
+
+\noindent To determine whether an entity refers to another entity and therefore should be merged, the matching rules in \autoref{table:anaphoraresolution} are used. On the left we have the initial entity. On the top we have the possibly referring entity (which occurred later in the text).
+
+\begin{table}
+    \begin{tabular}{r|ccc|}
+                & name  & noun  & pronoun \\
+        \hline
+        pronoun &       &       & =  \\
+        noun    &       & =     & yes \\
+        name    & =     &       & yes \\
+        \hline
+    \end{tabular}
+    \caption{Pronoun resolution lookup table. To determine whether they should be merged we look at the referring entity and move to the first column for which it has a value. The first test in that column that can be applied will determine the result. If none can be applied, the entities will not be merged. In case of a pronoun the entities are only merged if the first-occurring entity has a matching pronoun or no pronoun at all.}
+    \label{table:anaphoraresolution}
+\end{table}
+
+In the argument diagram the entities are printed using their most descriptive designation, so preferably their name, then their noun, and otherwise their pronoun. In case of anonymous entities created by the enthymeme resolution process the entities are displayed with the text `something'.
+
+\subsection{Enthymeme resolution}
+Parts of the argument are unstated: premises assumed to be known and accepted by all parties are not communicated (or not communicated because they are weak and the speaker does not want to wake sleeping dogs). However, even though these arguments are not part of the argumentative text, they can be supported and attacked by other claims that are. Hence, they have to be drawn in the diagram in order for them to be able to supported or attacked. Therefore we need to reconstruct and draw them.
+
+Enthymemes occur often, and visualising them helps with the understanding of arguments. By doing enthymeme resolution in the same state as the duplication of claims we cannot only fill in the claims that are not stated explicitly, we can also connect the claims that are stated elsewhere in the argument in the right place: the initially missing claim is first reconstructed through the enthymeme resolution process in the place we expect it. If later, when partial arguments higher up in the parse tree are merged and the reconstructed claim is found to be explicitly stated elsewhere in the argument, the reconstructed and original claim are merged.
+
+\paragraph{Rule-like interpretations of claims}
+Enthymeme resolution constructs one of the three premises (minor, major, conclusion) of a syllogism in case the other two are present. To do this we need to interpret the major premises in a different, more rule-like manner.
+
+\begin{exe}
+    \ex\label{ex:enthbf} birds can fly
+    \ex\label{ex:enthmm} men are mortal
+    \ex\label{ex:enthifbf} something can fly if it is a bird
+    \ex\label{ex:enthifmm} something is a man if it is mortal
+\end{exe}
+
+\noindent We alter the processing of the \texttt{major-claim} rules in the grammar. For example, examples~\ref{ex:enthbf} and~\ref{ex:enthmm} are how we now write major premises, and we store these in a similar way, i.e. with `birds' as subject. We change this to storing them as rules as read in examples~\ref{ex:enthifbf} and~\ref{ex:enthifmm}, replacing the subject with an unspecified entity that occurs as the subject of the major premise and all conditions. The original subject is now reformed as a condition.
+
+The data structure for major claims  extends the original claim data structure by adding a slot for \emph{conditions}. These conditions themselves are minor claims, but they are not explicitly drawn in the argument diagram. Instead, they are added to the text in the box of the major claim.
+
+We add grammar rules for arguments where one of the three premises is missing. In each of these the other two are used to construct the missing third element of the syllogism, and each of the rules will yield a (partial) argument that has all three elements present.
+
+\paragraph{Missing minor premises}
+The missing minor premises are reconstructed from the subject of the conclusion and the conditions of the major premise. For each of the conditions a minor premise is created with the subject of the conclusion and these constructed minor premises are linked to the conclusion using a support relation. This relation is then supported by a support relation originating from the major premise.
+
+\begin{grammar}
+<minor-argument> ::= <minor-claim> `because' <major-argument> % (a! <~ ?) <~ b
+\end{grammar}
+
+% Given:
+%   fly(t) <~ (fly(X) <- bird(X), wings(X))
+% Reconstructed:
+%   (fly(t) <~ bird(t), wings(t)) <~ (fly(X) <- bird(X), wings(x))
+
+\paragraph{Missing major premise}
+The major premise can be reconstructed from the minor premises by creating a condition for each of the minor premises and copying the verb and object from the conclusion to the new major premise.
+
+\begin{grammar}
+<minor-argument> ::= <minor-claim> `because' <minor-arguments> % (a! <~ b) <~ ?
+\end{grammar}
+
+% Given:
+%   fly(t) <~ bird(t), wings(t)
+% Reconstructed
+%   (fly(t) <~ bird(t), wings(t)) <~ (fly(X) <- bird(X), wings(X))
+
+\paragraph{Missing conclusion}
+The conclusion is reconstructed by taking the subject from one of the minor premises and the verb and object from the major premise. We use the subject from the first minor premise as we assume they either all have the same subject or the one most relevant is mentioned first. The constructed major premise is then also the salient premise of this argument.
+
+\begin{grammar}
+<minor-argument> ::= <minor-claim-list> `and' <major-argument> % (?! <~ a) <~ b
+\end{grammar}
+
+% Given:
+%   fly(t) <~ (fly(X) <- bird(X), wings(X))
+% Reconstructed
+%   (fly(t) <~ bird(t), wings(t)) <~ (fly(X) <- bird(X), wings(X))
+
+\paragraph{Discussion}
+Adding recursion will add multiple ways to express the same argument as well as adding multiple ways to interpret argumentative sentences. `a because b but c' can now be interpreted in three ways, but this isn't unexpected..
+
+Major premise data structure is a bit of a missed opportunity. Better would be to have the conditions be part of the argument and define semantics for them so that they can also be added and discussed in the argument itself. Also necessary for Tort.
