@@ -2,7 +2,7 @@ HASL is an implementation of the language which focusses on supporting all eleme
 
 \paragraph{Parser} Sentences are tokenized and to each of the tokens a part-of-speech tag (pos-tag) is assigned using spaCy\cite{spacy2}. The tokens are then parsed into argument structures using an Earley parser and the grammar described in this section.
 
-\paragraph{Argument structure} The partial and final argument structures are represented as a graph with nodes and edges, or claims and relations, with a few notable differences: First, a relation can have multiple claims as source to model Cooperative supporting relations between claims (\autoref{fig:cooperative}). Second, a relation can target another relation. This is needed to encode the warranted support relation (\autoref{fig:warrantedsupport}).
+\paragraph{Argument structure} The partial and final argument structures are represented as a graph with nodes and edges, or claims and relations, with a few notable differences: First, a relation can have multiple claims as source to model Cooperative supporting relations between claims (\autoref{fig:linked}). Second, a relation can target another relation. This is needed to encode the warranted support relation (\autoref{fig:warrantedsupport}).
 
 \paragraph{Merging arguments} At the end of every grammar rule the matched structures are merged. For rules that combine a few words into an \emph{object} this merely involves combining the spans of text into a single span that encompasses both (i.e. `the' + `man' becomes `the man') but when combining sentences the argument structures need to be merged. During this merge claims that were repeated in the text are merged into a single node in the argument graph.
 
