@@ -468,20 +468,72 @@ Parts of the argument are unstated: premises assumed to be known and accepted by
 Enthymemes occur often, and visualising them helps with the understanding of arguments. By doing enthymeme resolution in the same state as the duplication of claims we cannot only fill in the claims that are not stated explicitly, we can also connect the claims that are stated elsewhere in the argument in the right place: the initially missing claim is first reconstructed through the enthymeme resolution process in the place we expect it. If later, when partial arguments higher up in the parse tree are merged and the reconstructed claim is found to be explicitly stated elsewhere in the argument, the reconstructed and original claim are merged.
 
 \paragraph{Rule-like interpretations of claims}
-Enthymeme resolution constructs one of the three premises (minor, major, conclusion) of a syllogism in case the other two are present. To do this we need to interpret the major premises in a different, more rule-like manner.
+Enthymeme resolution constructs one of the three claims (minor premise, major premise, conclusion) of a syllogism in case the other two are present (\autoref{fig:enthymemes}). To do this we need to interpret the major premises in a different, more rule-like manner.
 
 \begin{exe}
     \ex\label{ex:enthbf} birds can fly
     \ex\label{ex:enthmm} men are mortal
     \ex\label{ex:enthifbf} something can fly if it is a bird
-    \ex\label{ex:enthifmm} something is a man if it is mortal
+    \ex\label{ex:enthifmm} something is mortal if it is a man
 \end{exe}
 
-\noindent We alter the processing of the \texttt{major-claim} rules in the grammar. For example, examples~\ref{ex:enthbf} and~\ref{ex:enthmm} are how we now write major premises, and we store these in a similar way, i.e. with `birds' as subject. We change this to storing them as rules as read in examples~\ref{ex:enthifbf} and~\ref{ex:enthifmm}, replacing the subject with an unspecified entity that occurs as the subject of the major premise and all conditions. The original subject is now reformed as a condition.
+\noindent We alter the processing of the \texttt{major-claim} rules in the grammar to store them as rules instead of spans of text. For example, examples~\ref{ex:enthbf} and~\ref{ex:enthmm} are how any claim is stored. For the major premise rules we change this to storing them as rules as read in examples~\ref{ex:enthifbf} and~\ref{ex:enthifmm}, replacing the subject with an unspecified entity that occurs as the subject of the major premise and all conditions. This entity functions much like a variable in first-order logic. The original subject is now reformed as a condition for the claim:
 
-The data structure for major claims  extends the original claim data structure by adding a slot for \emph{conditions}. These conditions themselves are minor claims, but they are not explicitly drawn in the argument diagram. Instead, they are added to the text in the box of the major claim.
+\begin{exe}
+    \ex something is a man $\to$ something is mortal
+\end{exe}
+
+The data structure for major claims  extends the original claim data structure by adding a slot for \emph{conditions}. These conditions themselves are minor claims, but they are not explicitly drawn in the argument diagram. Instead, they are added to the text in the box of the major claim. We allow multiple conditions to, for example, encode the need for linked support by multiple minors.
 
 We add grammar rules for arguments where one of the three premises is missing. In each of these the other two are used to construct the missing third element of the syllogism, and each of the rules will yield a (partial) argument that has all three elements present.
+
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box] (war) at (1, -1) {$C$};
+            \node[box,assumed] (pre) at (0, -2) {$B$};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{$A$ because $C_{maj}$.}
+        \caption{Missing minor premise}
+        \label{fig:missingminor}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {$A$};
+            \node[box,assumed] (war) at (1, -1) {$C$};
+            \node[box] (pre) at (0, -2) {$B$};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{$A$ because $B$.}
+        \caption{Missing major premise}
+        \label{fig:missingmajor}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box,assumed] (con) at (0,0) {$A$};
+            \node[box] (war) at (1, -1) {$C$};
+            \node[box] (pre) at (0, -2) {$B$};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{$B$ and $C_{maj}$.}
+        \caption{Missing conclusion}
+        \label{fig:missingconclusion}
+    \end{subfigure}
+    \caption{Enthymemes originating from syllogisms.}
+    \label{fig:enthymemes}
+\end{figure}
 
 \paragraph{Missing minor premises}
 The missing minor premises are reconstructed from the subject of the conclusion and the conditions of the major premise. For each of the conditions a minor premise is created with the subject of the conclusion and these constructed minor premises are linked to the conclusion using a support relation. This relation is then supported by a support relation originating from the major premise.
