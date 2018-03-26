@@ -1,0 +1,70 @@
+
+\begin{exe}
+	\ex Tweety can fly because birds can fly but Tweety is a penguin.
+
+	\ex Harry is a British subject because Harry is a man born in Bermuda but Harry has become naturalized.
+\end{exe}
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box] (min) at (0,-3) {Tweety is a bird};
+			\node[box] (maj) at (2,-1) {Birds can fly};
+			\node[box] (und) at (2.5,-2) {Tweety is a penguin};
+			\node[coordinate] (smaj) at (0,-1) {};
+			\node[coordinate] (sund) at (.5,-1) {};
+			\node[coordinate] (cund) at (.5,-2) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[->] (maj) -- (sund) -> (smaj);
+			\draw[-x] (und) -- (cund) -> (sund);
+		\end{tikzpicture}
+		\caption{First interpretation}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box] (min) at (0,-3) {Tweety is a bird};
+			\node[box] (maj) at (2,-2) {Birds can fly};
+			\node[box] (att) at (2.5,-1) {Tweety is a penguin};
+			\node[coordinate] (smaj) at (0,-2) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[->] (maj) -> (smaj);
+			\draw[-x] (att) -| ([xshift=.5cm]con.south);
+		\end{tikzpicture}
+		\caption{Second interpretation}
+	\end{subfigure}
+	\figsentence{Tweety can fly because Tweety is a bird and birds can fly but Tweety is a penguin.}
+	\caption{Argument diagram from HASL/0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\begin{tikzpicture}
+		\node[box] (con) at (0,0) {Harry is a British subject};
+		
+		\node[box,text width=3cm] (pcon) at (-1.75,-3) {Harry has become naturalized}; % datum
+		\node[box,assumed,text width=3cm] (wcon) at (-4,-1.5) {Something is not a British subject if something has become naturalized}; % warrant
+		\node[coordinate] (scon) at (-1.75, -1.5) {}; % warrant -> (datum -> concl)
+		\node[coordinate] (ccon) at (-1.75, -1) {}; % budge in (datum -> concl) arrow
+		
+		
+		\node[box,text width=3cm] (ppro) at (1.75,-3) {Harry is a man born in Bermuda};
+		\node[box,assumed,text width=3cm] (wpro) at (4,-1.5) {A man born in Bermuda is a British subject};
+		\node[coordinate] (spro) at (1.75, -1.5) {};
+		\node[coordinate] (cpro) at (1.75,-1) {};
+		
+		\draw[-x] (pcon) -- (scon) -- (ccon) -| ([xshift=-.5cm]con.south);
+		\draw[->] (ppro) -- (spro) -- (cpro) -| ([xshift=.5cm]con.south);
+		\draw[->] (wcon) -> (scon);
+		\draw[->] (wpro) -> (spro);
+	\end{tikzpicture}
+	\figsentence{Harry is a British subject because Harry is a man born in Bermuda but Harry has become naturalized.}
+	\caption{Argument diagram from HASL/1. Shaded boxes are reconstructed major premises.}
+\end{figure}
