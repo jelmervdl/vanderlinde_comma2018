@@ -1,0 +1,58 @@
+The object is red because the object appears red to me but it is illuminated by a red light.
+
+Claims:
+  ~something is red if something appears red to me
+  ~The object is red
+  ~the object appears red to me
+  ~the object is illuminated by a red light
+Relations:
+  ~(the object is illuminated by a red light ~* the object appears red to me)
+  ~(the object appears red to me ~> The object is red)
+  ~(something is red if something appears red to me ~> (the object appears red to me ~> The object is red)),
+
+Object is red
+^
+| <- Something is red if it appears red to me
+|
+the object appears red to me
+*
+|
+the object is illuminated by a red light
+
+-------------
+
+Claims:
+  ~The object is red
+  ~the object appears red to me
+  ~The object is illuminated by a red light
+Relations:
+  ~(the object appears red to me ~> The object is red)
+  ~(The object is illuminated by a red light ~* (the object appears red to me ~> The object is red)),
+
+Object is red
+^
+| *- The object is illuminated by a red light
+|
+the object appears red to me
+
+------------
+
+Claims:
+  ~something is red if something appears red to me
+  ~The object is red
+  ~the object appears red to me
+  ~The object is illuminated by a red light
+Relations:
+  ~(the object appears red to me ~> The object is red)
+  ~(something is red if something appears red to me ~> (the object appears red to me ~> The object is red))
+  ~(The object is illuminated by a red light ~* The object is red)
+
+
+The object is illuminated by a red light
+|
+*
+The object is red
+^
+| <- Something is red if something appears red to me
+|
+The object appears red to me

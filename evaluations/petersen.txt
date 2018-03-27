@@ -1,0 +1,56 @@
+Petersen will not be a Roman Catholic because he is a Swede and a Swede can be taken almost certainly not to be a Roman Catholic because the proportion of Roman Catholic Swedes is less than 2%.
+
+Claims:
+  Petersen will not be a Roman Catholic
+  Petersen is a Swede
+  something can be taken almost certainly not to be a Roman Catholic if something is a Swede
+  the proportion of Roman Catholic Swedes is less than 2 %
+Relations:
+  ~(the proportion of Roman Catholic Swedes is less than 2 % ~> something can be taken almost certainly not to be a Roman Catholic if something is a Swede)
+  ~(Petersen is a Swede ~> Petersen will not be a Roman Catholic)
+  ~(something can be taken almost certainly not to be a Roman Catholic if something is a Swede ~> (Petersen is a Swede ~> Petersen will not be a Roman Catholic)),
+
+Petersen will not be a Roman Catholic
+^
+|
+| <- Something can be taken almost certainly not
+|    to be a Roman Catholic if something is a Swede
+|    ^
+|    |
+|    The proportion of Roman Catholic Swedes is less than 2%
+|
+Petersen is a Swede
+
+
+-----------
+
+Claims:
+  something will not be a Roman Catholic if something can be taken almost certainly not to be a Roman Catholic
+  Petersen will not be a Roman Catholic
+  Petersen is a Swede
+  something can be taken almost certainly not to be a Roman Catholic if something is a Swede
+  the proportion of Roman Catholic Swedes is less than 2 %
+  Petersen can be taken almost certainly not to be a Roman Catholic
+Relations:
+  ~(the proportion of Roman Catholic Swedes is less than 2% ~> something can be taken almost certainly not to be a Roman Catholic if something is a Swede)
+  ~(Petersen is a Swede ^ Petersen is a Swede ~> Petersen can be taken almost certainly not to be a Roman Catholic)
+  ~(something can be taken almost certainly not to be a Roman Catholic if something is a Swede ~> (Petersen is a Swede ^ Petersen is a Swede ~> Petersen can be taken almost certainly not to be a Roman Catholic))
+  ~(Petersen can be taken almost certainly not to be a Roman Catholic ~> Petersen will not be a Roman Catholic)
+  ~(something will not be a Roman Catholic if something can be taken almost certainly not to be a Roman Catholic ~> (Petersen can be taken almost certainly not to be a Roman Catholic ~> Petersen will not be a Roman Catholic))
+
+
+C1: Petersen will not be a Roman Catholic
+^
+| <- B1: something will not be a Roman Catholic
+|    if something can be taken almost certainly
+|    not to be a Roman Catholic
+|
+C2: Petersen can be taken almost certainly not to be a Roman Catholic
+^
+| <- B2: something can be taken almost certainly not
+|    to be a Roman Catholic if something is a Swede
+|    ^
+|    |
+|    B3: the proportion of Roman Catholic Swedes is less than 2%
+|
+D: Petersen is a Swede

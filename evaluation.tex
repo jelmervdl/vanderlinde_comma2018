@@ -1,36 +1,169 @@
+We evaluate our implementation by formulating and visualizing different characteristics in arguments --- pros and cons, syllogisms, undercutters --- as well as examples from Toulmin in the context of Toulmin's argument model.
+
+\paragraph{Pros}
+Syllogisms always consist of three elements, but not all of them have to be explicitly stated. Example~\ref{evalsyl1} is the complete syllogism, and examples~\ref{evalsylmissingminor},~\ref{evalsylmissingmajor} and~\ref{evalsylmissingconclusion} are the enthymemes.
 
 \begin{exe}
-	\ex Tweety can fly because birds can fly but Tweety is a penguin.
-
-	\ex Harry is a British subject because Harry is a man born in Bermuda but Harry has become naturalized.
+	\ex\label{evalsyl1} Socrates is mortal because he is a man and men are mortal.
+	\ex\label{evalsylmissingminor} Socrates is mortal because men are mortal.
+	\ex\label{evalsylmissingmajor} Socrates is mortal because he is a man.
+	\ex\label{evalsylmissingconclusion} Socrates is a man and men are mortal.
 \end{exe}
 
+\noindent \autoref{fig:evalsyl} shows the interpretations. HASL is able to identify the missing premise or conclusion and fill it in. It also correctly identified `he' as a pronoun and instead uses the more descriptive `Socrates' in the boxes.
+
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {Socrates is mortal};
+            \node[box] (war) at (1, -1) {Something is mortal if\\something is a man};
+            \node[box,assumed] (pre) at (0, -2) {Socrates is a man};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{Socrates is mortal because men are mortal.}
+        \caption{Missing minor premise}
+        \label{fig:evalsylmissingminor}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box] (con) at (0,0) {Socrates is mortal};
+            \node[box,assumed] (war) at (1, -1) {Something is mortal\\if something is a man};
+            \node[box] (pre) at (0, -2) {Socrates is a man};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{Socrates is mortal because he is a man.}
+        \caption{Missing major premise}
+        \label{fig:evalsylmissingmajor}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node[box,assumed] (con) at (0,0) {Socrates is mortal};
+            \node[box] (war) at (1, -1) {Something is mortal\\if something is a man};
+            \node[box] (pre) at (0, -2) {Socrates is a man};
+            \node[coordinate] (w) at (0, -1) {};
+            \draw[->] (pre) -- (w) -> (con);
+            \draw[->] (war) -> (w);
+        \end{tikzpicture}
+        \figsentence{Socrates is a man and men are mortal.}
+        \caption{Missing conclusion}
+        \label{fig:evalsylmissingconclusion}
+    \end{subfigure}
+    \caption{Enthymemes originating from syllogisms.}
+    \label{fig:evalsyl}
+\end{figure}
+
+\paragraph{Cons}
+There are many things that can be attacked in an argument. HASL is limited to using keywords and the order of words to identifying what is the claim being attacked.
+
+\begin{exe}
+	\ex\label{evalcons1} Tweety can fly because birds can fly but Tweety is a penguin.
+	\ex\label{evalcons2} Tweety can fly because Tweety is a bird but Tweety is a penguin.
+	\ex\label{evalcons3} Birds can fly but Tweety can not fly because Tweety is a penguin.
+\end{exe}
+
+\noindent Examples~\ref{evalcons1} and~\ref{evalcons2} are both interpreted in multiple ways because it is not clear to HASL what is the attacked claim. The first interpretation (\autoref{fig:evalcons1a}) `Tweety is a penguin' is interpreted as an undercutter, while in the second interpretation the claim is interpreted as a direct attack on the major premise (\autoref{fig:evalcons1b}).
+
+The formulation of Example~\ref{evalcons1} is the only way to write an argument with an undercutter, i.e. there needs to be a third claim in the sentence that sets up the relation to attack. There is no way to write an argument with an undercutter without also having additional interpretations.
+
+Which interpretation is the correct interpretation is a discussion topic on its own. Arguably, the interpretation in \autoref{fig:evalcons1a} is ideal because it attacks the argumentation, showing that birds can fly is interpreted as a claim generally assumed to be true but which does allow for exceptions. The second interpretation in \autoref{fig:evalcons1b} shows what happens if the major premise is interpreted as a analytical expression which could be better formulated as `all birds can fly'. The claim that Tweety is a penguin (and therefore Tweety can not fly) is in this case a direct attack on that claim.
+
+Compared to \autoref{fig:evalcons1}, the interpretations in \autoref{fig:evalcons2b} and \autoref{fig:evalcons2c} are new. The interpretation in \autoref{fig:evalcons2b} shows that the grammar in the sentence allows for a nonsensical argument: our definition if penguin excludes this interpretation. If HASL would have had access to such world knowledge these interpretations could be excluded.
+
+\paragraph{Enthymeme resolution}
+In \autoref{fig:evalcons1b} the claim that Tweety is a penguin --- and therefore Tweety can not fly --- is in this case a direct attack on that claim. In this interpretation the unstated claim that Tweety can not fly would have been a claim that would have been helpful if drawn, but the enthymeme resolution is only implemented for supporting claims.
+
+In Figures~\ref{fig:evalcons2b} and~\ref{fig:evalcons2c} the unstated major premise is present, but in \autoref{fig:evalcons2a} it is missing. This is a limitation of the grammar: the grammar rule which instantiates the undercutter also has to instantiate the relation to attack, excluding the rules that can instantiate the unstated premise from being applied.
+
+The interpretation in \autoref{fig:evalcons2c} is based on the unstated claim that penguins cannot fly. Having this unstated claim drawn would have been helpful. In \autoref{evalcons3} this is picked up.
+
+When comparing the interpretations of Example~\ref{evalcons1} with Example~\ref{evalcons2} (Figures~\ref{fig:evalcons1} and~\ref{fig:evalcons2}) we observe that assumed claims are never attacked, which is why there is no interpretation equal to \autoref{fig:evalcons1b} in \autoref{fig:evalcons2}, an interpretation that we deemed valid.
+ 
 \begin{figure}[ht!]
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{.45\textwidth}
 		\centering
 		\begin{tikzpicture}
 			\node[box] (con) at (0,0) {Tweety can fly};
-			\node[box] (min) at (0,-3) {Tweety is a bird};
+			\node[box,assumed] (min) at (0,-3) {Tweety is a bird};
 			\node[box] (maj) at (2,-1) {Birds can fly};
 			\node[box] (und) at (2.5,-2) {Tweety is a penguin};
 			\node[coordinate] (smaj) at (0,-1) {};
-			\node[coordinate] (sund) at (.5,-1) {};
-			\node[coordinate] (cund) at (.5,-2) {};
+			\node[coordinate] (sund) at (0,-2) {};
 			
 			\draw[->] (min) -- (smaj) -| (con);
-			\draw[->] (maj) -- (sund) -> (smaj);
-			\draw[-x] (und) -- (cund) -> (sund);
+			\draw[->] (maj) -> (smaj);
+			\draw[-x] (und) -> (sund);
 		\end{tikzpicture}
-		\caption{First interpretation}
+		\caption{First interpretation: `Tweety is a penguin' as an undercutter.}
+		\label{fig:evalcons1a}
 	\end{subfigure}
+	\begin{subfigure}[b]{.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box,assumed] (min) at (0,-3) {Tweety is a bird};
+			\node[box] (maj) at (2,-1) {Birds can fly};
+			\node[box] (att) at (2.5,-2) {Tweety is a penguin};
+			\node[coordinate] (smaj) at (0,-1) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[->] (maj) -> (smaj);
+			\draw[-x] (att.north) -| (maj);
+		\end{tikzpicture}
+		\caption{Second interpretation: `Tweety is a penguin' attacking the major premise.}
+		\label{fig:evalcons1b}
+	\end{subfigure}
+	\figsentence{Tweety can fly because birds can fly but Tweety is a penguin.}
+	\caption{Argument diagram for example~\ref{evalcons1}.}
+	\label{fig:evalcons1}
+\end{figure}
 
-	\begin{subfigure}[b]{\textwidth}
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{.3\textwidth}
 		\centering
 		\begin{tikzpicture}
 			\node[box] (con) at (0,0) {Tweety can fly};
 			\node[box] (min) at (0,-3) {Tweety is a bird};
-			\node[box] (maj) at (2,-2) {Birds can fly};
+			\node[box] (maj) at (2,-1) {Tweety is a penguin};
+			\node[coordinate] (smaj) at (0,-1) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[-x] (maj) -> (smaj);
+		\end{tikzpicture}
+		\caption{First interpretation}
+		\label{fig:evalcons2a}
+	\end{subfigure}
+	\begin{subfigure}[b]{.3\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box] (min) at (0,-2) {Tweety is a bird};
+			\node[box,assumed] (maj) at (2,-1) {Birds can fly};
+			\node[box] (att) at (0,-3) {Tweety is a penguin};
+			\node[coordinate] (smaj) at (0,-1) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[->] (maj) -> (smaj);
+			\draw[-x] (att) -> (min);
+		\end{tikzpicture}
+		\caption{Second interpretation}
+		\label{fig:evalcons2b}
+	\end{subfigure}
+	\begin{subfigure}[b]{.3\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Tweety can fly};
+			\node[box] (min) at (0,-3) {Tweety is a bird};
+			\node[box,assumed] (maj) at (2,-2) {Birds can fly};
 			\node[box] (att) at (2.5,-1) {Tweety is a penguin};
 			\node[coordinate] (smaj) at (0,-2) {};
 			
@@ -38,33 +171,218 @@
 			\draw[->] (maj) -> (smaj);
 			\draw[-x] (att) -| ([xshift=.5cm]con.south);
 		\end{tikzpicture}
-		\caption{Second interpretation}
+		\caption{Third interpretation}
+		\label{fig:evalcons2c}
 	\end{subfigure}
-	\figsentence{Tweety can fly because Tweety is a bird and birds can fly but Tweety is a penguin.}
-	\caption{Argument diagram from HASL/0}
+	\figsentence{Tweety can fly because Tweety is a bird but Tweety is a penguin.}
+	\caption{Argument diagram for example~\ref{evalcons2}.}
+	\label{fig:evalcons2}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\begin{tikzpicture}
-		\node[box] (con) at (0,0) {Harry is a British subject};
-		
-		\node[box,text width=3cm] (pcon) at (-1.75,-3) {Harry has become naturalized}; % datum
-		\node[box,assumed,text width=3cm] (wcon) at (-4,-1.5) {Something is not a British subject if something has become naturalized}; % warrant
-		\node[coordinate] (scon) at (-1.75, -1.5) {}; % warrant -> (datum -> concl)
-		\node[coordinate] (ccon) at (-1.75, -1) {}; % budge in (datum -> concl) arrow
-		
-		
-		\node[box,text width=3cm] (ppro) at (1.75,-3) {Harry is a man born in Bermuda};
-		\node[box,assumed,text width=3cm] (wpro) at (4,-1.5) {A man born in Bermuda is a British subject};
-		\node[coordinate] (spro) at (1.75, -1.5) {};
-		\node[coordinate] (cpro) at (1.75,-1) {};
-		
-		\draw[-x] (pcon) -- (scon) -- (ccon) -| ([xshift=-.5cm]con.south);
-		\draw[->] (ppro) -- (spro) -- (cpro) -| ([xshift=.5cm]con.south);
-		\draw[->] (wcon) -> (scon);
-		\draw[->] (wpro) -> (spro);
-	\end{tikzpicture}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Birds can fly};
+			\node[box] (att) at (0,-1) {Tweety can not fly};
+			\node[box] (sup) at (0,-3) {Tweety is a penguin};
+			\node[box,assumed] (maj) at (2,-2) {Penguins can not fly};
+			\node[coordinate] (smaj) at (0,-2) {};
+			
+			\draw[-x] (att) -> (con);
+			\draw[->] (sup) -- (smaj) -> (att);
+			\draw[->] (maj) -> (smaj);
+		\end{tikzpicture}
+	\end{subfigure}
+	\figsentence{Birds can fly but Tweety can not fly because Tweety is a penguin.}
+	\caption{Argument diagram for example~\ref{evalcons3}.}
+	\label{fig:evalcons3}
+\end{figure}
+
+\begin{exe}
+	\ex\label{evalcons4} The object is red because the object appears red to me but it is illuminated by a red light.
+\end{exe}
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {The object is red};
+			\node[box,text width=3cm] (min) at (0,-2.2) {The object appears red to me};
+			\node[box,assumed,text width=3cm] (maj) at (-2,-1) {Something is red if it appears red to me};
+			\node[box,text width=3cm] (att) at (0, -4) {The object is illuminated by a red light};
+			\node[coordinate] (smaj) at (0,-1) {};
+			
+			\draw[->] (min) -- (smaj) -| (con);
+			\draw[-x] (att) -> (min);
+			\draw[->] (maj) -> (smaj);
+		\end{tikzpicture}
+		\caption{First interpretation}
+	\end{subfigure}
+	\begin{subfigure}[b]{.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {The object is red};
+			\node[box,text width=3cm] (min) at (0,-3) {The object appears red to me};
+			\node[box,assumed,text width=3cm] (und) at (2.2,-1.5) {The object is illuminated by a red light};
+			\node[coordinate] (sund) at (0,-1.5) {};
+			
+			\draw[->] (min) -- (sund) -| (con);
+			\draw[-x] (und) -> (sund);
+		\end{tikzpicture}
+		\caption{Second interpretation}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {The object is red};
+			\node[box,text width=3cm] (min) at (-2,-2.2) {The object appears red to me};
+			\node[box,assumed,text width=3cm] (maj) at (-4,-1) {Something is red if it appears red to me};
+			\node[box,text width=3cm] (att) at (2, -2.2) {The object is illuminated by a red light};
+			\node[coordinate] (smaj) at (-2,-1) {};
+			\node[coordinate] (cmaj) at (-2,-0.75) {};
+			\node[coordinate] (catt) at (2,-0.75) {};
+			
+			\draw[->] (min) -- (smaj) -- (cmaj) -| ([xshift=-0.5cm]con.south);
+			\draw[-x] (att.north) -| (catt) -| ([xshift=0.5cm]con.south);
+			\draw[->] (maj) -> (smaj);
+		\end{tikzpicture}
+		\caption{Third interpretation}
+	\end{subfigure}
+	\figsentence{The object is red because the object appears red to me but it is illuminated by a red light.}
+	\caption{Argument diagram for example~\ref{evalcons4}.}
+\end{figure}
+
+\paragraph{Toulmin}
+Our argument schema can emulate most elements of Toulmin's model. We do not have a specific element for the qualifier of an argument, and our attacks are specifically attacking a claim in the argument as where Toulmin gives attacking arguments their own place in the argument itself.
+
+We formulated two of Toulmin's example arguments, Examples~\ref{ex:harry} and~\ref{ex:petersen}. In the first example we intentionally left out the warrant to test whether this is picked up by HASL. In the second example we do state the warrant (`a Swede can be taken...'), and support it with a backing (`because the portion of...').
+
+\begin{exe}
+	\ex\label{ex:harry} Harry is a British subject because Harry is a man born in Bermuda but Harry has become naturalized.
+	\ex\label{ex:petersen} Petersen will not be a Roman Catholic because he is a Swede and a Swede can be taken almost certainly not to be a Roman Catholic because the proportion of Roman Catholic Swedes is less than 2\%.
+\end{exe}
+
+\noindent Example~\ref{ex:harry} shows the same ambiguity in interpretation we saw in \autoref{fig:evalcons2}: the are three ways to interpret the attack. In two of the three interpretations the warrant is identified, but in the first interpretation it is missing for the reasons described earlier with \autoref{fig:evalcons2a}.
+
+\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Harry is a British subject};
+			\node[coordinate] (cund) at (0,-1.5) {};
+			\node[box] (und) at (3,-1.5) {Harry has become naturalized};
+			\node[box] (dat) at (0,-3) {Harry is a man born in Bermuda};
+			\draw[->] (dat) -- (cund) -> (con);
+			\draw[-x] (und) -> (cund);
+		\end{tikzpicture}
+		\caption{First interpretation: Being naturalized is an exception to the general rule.}
+	\end{subfigure}
+	\par\medskip % force a bit of vertical whitespace
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Harry is a British subject};
+			\node[coordinate] (cwar) at (0,-1.5) {};
+			\node[box,assumed,text width=4cm] (war) at (3,-1.5) {Something is a British subject if something is a man born in Bermuda};
+			\node[box] (dat) at (0,-3) {Harry is a man born in Bermuda};
+			\node[box] (att) at (0,-4) {Harry has become naturalized};
+			\draw[->] (dat) -- (cwar) -> (con);
+			\draw[->] (war) -> (cwar);
+			\draw[-x] (att) -> (dat);
+		\end{tikzpicture}
+		\caption{Second interpretation: Being naturalized is an argument against being born in Bermuda.}
+	\end{subfigure}
+	\par\medskip % force a bit of vertical whitespace
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0,0) {Harry is a British subject};
+			
+			\node[box,text width=3cm] (pcon) at (1.75,-3) {Harry has become naturalized}; % datum
+			\node[coordinate] (ccon) at (1.75, -1) {}; % budge in (datum -> concl) arrow
+			
+			\node[box,text width=3cm] (ppro) at (-1.75,-3) {Harry is a man born in Bermuda};
+			\node[box,assumed,text width=3cm] (wpro) at (-4,-1.5) {A man born in Bermuda is a British subject};
+			\node[coordinate] (spro) at (-1.75, -1.5) {};
+			\node[coordinate] (cpro) at (-1.75,-1) {};
+			
+			\draw[-x] (pcon) -- (ccon) -| ([xshift=.5cm]con.south);
+			\draw[->] (ppro) -- (spro) -- (cpro) -| ([xshift=-.5cm]con.south);
+			\draw[->] (wpro) -> (spro);
+		\end{tikzpicture}
+		\caption{Third interpretation: Being naturalized is an argument against being a British subject.}
+	\end{subfigure}
 	\figsentence{Harry is a British subject because Harry is a man born in Bermuda but Harry has become naturalized.}
 	\caption{Argument diagram from HASL/1. Shaded boxes are reconstructed major premises.}
+	\label{fig:harry}
 \end{figure}
+
+In \autoref{fig:petersen} the interpretations of Example~\ref{ex:petersen} are shown. We have drawn both the interpretations without and with enthymeme resolution to highlight the effect of adding unstated claims to the argument diagram. It shows that although qualifiers are not intentionally taken into account, their meaning is picked up and reflected in the argument.
+
+Furthermore the backing is always correctly placed as supporting the warrant.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (con) at (0, 0) {Petersen will not be a Roman Catholic};
+			\node[box] (sup) at (0, -5) {Petersen is a Swede};
+			\node[box,text width=5cm] (maj) at (4, -1.5) {Something can be taken almost certainly not to be a Roman Catholic if something is a Swede};
+			\node[box,text width=5cm] (back) at (4, -3.5) {The proportion of Roman Catholic Swedes is less than 2\%};
+			\node[coordinate] (smaj) at (0, -1.5) {};
+			\draw[->] (sup) -- (smaj) -| (con);
+			\draw[->] (maj) -> (smaj);
+			\draw[->] (back) -> (maj);
+		\end{tikzpicture}
+		\caption{Interpretation without enthymeme resolution.}
+	\end{subfigure}
+	\par\bigskip % force a bit of vertical whitespace
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[box] (C1) at (0, 0) {Petersen will not be a Roman Catholic};
+			
+			\node[coordinate] (X1) at (0, -1.5) {};
+
+			\node[box,text width=5cm,assumed] (B1) at (4, -1.5) {something will not be a Roman Catholic if something can be taken almost certainly not to be a Roman Catholic};
+
+			\node[box,text width=5cm,assumed] (C2) at (0, -3) {Petersen can be taken almost certainly not to be a Roman Catholic};
+			
+			\node[coordinate] (X2) at (0, -4.5) {};
+
+			\node[box,text width=5cm] (B2) at (4, -4.5) {Something can be taken almost certainly not to be a Roman Catholic if something is a Swede};
+			
+			\node[box,text width=5cm] (B3) at (4, -6.5) {The proportion of Roman Catholic Swedes is less than 2\%};
+
+			\node[box] (D) at (0, -8) {Petersen is a Swede};
+
+			\draw[->] (C2) -- (X1) -| (C1);
+			\draw[->] (B1) -> (X1);
+			\draw[->] (D) -- (X2) -| (C2);
+			\draw[->] (B2) -> (X2);
+			\draw[->] (B3) -> (B2);
+		\end{tikzpicture}
+		\caption{Interpretation with enthymeme resolution.}
+	\end{subfigure}
+	\figsentence{Petersen will not be a Roman Catholic because he is a Swede and a Swede can be taken almost certainly not to be a Roman Catholic because the proportion of Roman Catholic Swedes is less than 2\%.}
+	\caption{Interpretation of Example~\ref{ex:petersen}.}
+	\label{fig:petersen}
+\end{figure}
+
+To sum up (yes, this is still mainly for myself as a reminder)
+\begin{enumerate}
+\item General: Context necessary for ruling out possible targets of the attack.
+\item Petersen: Toulmin's backing can be expressed. In a single sentence.
+\item Petersen: enthymeme resolution shows the difference between `will not be' and `can be taken almost certainly'.
+\item Grammar rules exclude each other. The rule for the undercutter excludes the rule for missing major premise.
+\item Enthymeme resolution for attacks would have been really helpful. (in the case of `Tweety can fly but Tweety is a penguin')
+\item Enthymeme resolution which allows for assumed claims to be attacked would have been really helpful since this is a natural thing to do (e.g. in a straw man fallacy)
+\item All elements of Toulmin's model except for the qualifier can be modelled. Explicitly modelling the qualifier may not always be necessary.
+\end{enumerate}
+

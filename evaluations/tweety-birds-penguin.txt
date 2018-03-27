@@ -1,0 +1,21 @@
+Tweety can fly because birds can fly but Tweety is a penguin.
+
+Claims:
+  Tweety can fly
+  something can fly if something is a bird
+  Tweety is a bird
+  Tweety is a penguin
+Relations:
+  (Tweety is a bird ~> Tweety can fly)
+  (something can fly if something is a bird ~> (Tweety is a bird ~> Tweety can fly))
+  (Tweety is a penguin ~* Tweety can fly),
+
+Claims:
+  Tweety can fly
+  something can fly if something is a bird
+  Tweety is a penguin
+  Tweety is a bird
+Relations:
+  (Tweety is a penguin ~* something can fly if something is a bird)
+  (Tweety is a bird ~> Tweety can fly)
+  (something can fly if something is a bird ~> (Tweety is a bird ~> Tweety can fly))

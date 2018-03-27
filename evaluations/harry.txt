@@ -1,0 +1,59 @@
+Claims:
+  Harry is a British subject
+  Harry is a man born in Bermuda
+  Harry has become naturalized
+Relations:
+  (Harry is a man born in Bermuda ~> Harry is a British subject)
+  (Harry has become naturalized ~* (Harry is a man born in Bermuda ~> Harry is a British subject)),
+
+Harry is a British subject
+^
+| *- Harry has become naturalized
+|
+Harry is a man born in Bermuda
+
+----
+
+Claims:
+  something is a British subject if something is a man born in Bermuda
+  Harry is a British subject
+  Harry is a man born in Bermuda
+  Harry has become naturalized
+Relations:
+  (Harry has become naturalized ~* Harry is a man born in Bermuda)
+  (Harry is a man born in Bermuda ~> Harry is a British subject)
+  (something is a British subject if something is a man born in Bermuda ~> (Harry is a man born in Bermuda ~> Harry is a British subject)),
+
+
+Harry is a British subject
+^
+| <- Something is a British subject if
+|    something is a man born in Bermuda
+|
+Harry is a man born in Bermuda
+*
+|
+Harry has become naturalized
+
+
+-----
+
+Claims:
+  something is a British subject if something is a man born in Bermuda
+  Harry is a British subject
+  Harry is a man born in Bermuda
+  Harry has become naturalized
+Relations:
+  (Harry is a man born in Bermuda ~> Harry is a British subject)
+  (something is a British subject if something is a man born in Bermuda ~> (Harry is a man born in Bermuda ~> Harry is a British subject))
+  (Harry has become naturalized ~* Harry is a British subject)
+
+Harry has become naturalized
+|
+*
+Harry is a British subject
+^
+| <- Something is a British subject if
+|    something is a man born in Bermuda
+| 
+Harry is a man born in Bermuda
