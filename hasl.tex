@@ -208,7 +208,7 @@ Objects are often the objects of sentences, although the rule is also reused for
             \draw[->] (per2) -- ++(0,.4) -| (con);
         \end{tikzpicture}
         \figsentence{$A$ because $B$ and $C$.}
-        \caption{Linked support}
+        \caption{Cooperative support}
         \label{fig:linked}
     \end{subfigure}
     \begin{subfigure}[b]{0.3\textwidth}
@@ -221,7 +221,7 @@ Objects are often the objects of sentences, although the rule is also reused for
             \draw[->] (per2) -- ++(0,.4) -| ([xshift=0.1cm]con.south);
         \end{tikzpicture}
         \figsentence{$A$ because $B$ and because $C$.}
-        \caption{Multiple support}
+        \caption{Independent support}
         \label{fig:multiple}
     \end{subfigure}
     \begin{subfigure}[b]{.3\textwidth}
@@ -241,9 +241,9 @@ Objects are often the objects of sentences, although the rule is also reused for
     \label{fig:conjunctions}
 \end{figure}
 
-Arguments can be supported or attacked by multiple premises in three different ways, as shown in \autoref{fig:conjunctions}. First, multiple premises can together support the conclusion, implying that attacking one of the premises is sufficient to undermine the conclusion. Second, multiple premises can independently support the conclusion, where attacking one premise does not affect the support of the others on the conclusion. Lastly, the supporting premise itself can be supported.
+Arguments can be supported or attacked by multiple claims in three different ways, as shown in \autoref{fig:conjunctions}. First, multiple claims can cooperatively support the conclusion, implying that attacking one of the claims is sufficient to undermine the conclusion. Second, multiple claims can independently support the conclusion, where attacking one premise does not affect the support of the others on the conclusion. Lastly, the supporting premise itself can be supported.
 
-The grammar for supporting and attacking claims is extended to allow a conclusion to be supported or attacked by multiple premises as shown in the diagrams in Figures~\ref{fig:linked}.
+The grammar for supporting and attacking claims is extended to allow a conclusion to be supported or attacked by multiple claims as shown in the diagrams in Figures~\ref{fig:linked}.
 
 \begin{grammar}
 <argument> ::= <claim> `because' <minor-claims> % a <~ b+
@@ -257,10 +257,10 @@ The grammar for supporting and attacking claims is extended to allow a conclusio
 \alt <minor-claim>
 \end{grammar}
 
-\noindent Multiple support (\autoref{fig:multiple}) and chained support (\autoref{fig:chained}) can be expressed using multiple sentences.
+\noindent Independent support (\autoref{fig:multiple}) and chained support (\autoref{fig:chained}) can be expressed using multiple sentences.
 
 \subsection{Rules, warrants, generalizations}
-Warranted support and attack combines the usage of the major and minor premise.
+Warranted support and attack combines the usage of the major and minor claims.
 
 \begin{figure}[ht!]
     \centering
