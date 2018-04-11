@@ -1,12 +1,29 @@
-Just adding the assumed missing claims from enthymemes to the argument may not be what the original author of the argument intended. The meaning or weight may become distorted, or it may become clear that the incomplete argument was, after being completed, a bad argument. \cite{waltonReed2005}. 
+% \section{Arguments for and against claims}
 
-\begin{table}
-	\begin{tabular}{l|ll|}
-		& HASL/0 & HASL/1  \\
-		\hline
-		Support & yes & yes \\
-		Attack & yes & yes \\
-		Schema recognition & no & via enthymeme resolution \\
-		Schema extraction & no & yes
-	\end{tabular}
-\end{table}
+\paragraph{Formal argumentation theory and Toulmin's model}
+We defined how we can express cooperative and independent support and attack for claims, and due to the option to composition arguments we can also model chained support as described by Freeman\cite{Freeman:1991ef}. For attacking claims we can model the undermining, undercutting and rebutting arguments defined by Pollock\cite{pollock1987}. Essentially we have all elements to write arguments that include all elements of Toulmin's model.
+
+However, we cannot always express which interpretation we want of our textual arguments. For example, sentences in the form of `$A$ because $B$ but $C$' are always interpreted ambiguously. Differentiating between them is only possible when a semantic understanding of the claims is gained, and requires world knowledge and inference, or by adding more explicit markers to our grammar, making the HASL less a human language and more a programming language. 
+
+Furthermore, the interpretation for attacks in sentences such as `$A$ but $B$ because $C$' are odd. For example, take `Tweety is a bird but Tweety cannot fly because Tweety is a penguin'. This would be interpreted as Tweety cannot fly being an argument against Tweety being a bird. Ideally, we would fill in that Tweety is a bird but Tweety cannot fly is really the argument that Tweety is a bird, birds generally can fly, but Tweety is an exception to this general case as Tweety cannot fly. Interpreting attacking arguments is hard, as there are often enthymemes involved.
+
+A more general problem with formal interpretations of argumentation is that one or more aspects becomes lost. For example, in the textual representation there is the choice in which order the supporting arguments and attacking arguments are presented. The language enforces supporting claims before attacking claims at the sentence level, but an argument can consist of multiple sentences, and the order in which the reasoning is presented among those sentences is free. This order is often relevant to how claims are observed, whether they hold or are compromised and retracted in later sentences. In the diagram model there is no sequential order, and there is no way to express whether an attack was accepted as successful or not.
+
+A similar problem occurs with the resolution of enthymemes. By adding the missing elements of enthymemes of arguments to the argument diagram we do change in a sense the interpretation of the argument. Enthymemes may be intentional, and the resulting augmented argument may not be what the original author of the argument intended. The meaning or weight may become distorted, or it may become clear that the incomplete argument was, after being completed, a bad argument \cite{waltonReed2005}.
+
+In a sense, information is lost in our translation from text to an argument diagram.
+
+\paragraph{Rules and generalisations}
+
+We differentiate between general and specific claims by assuming that specific claims always have a very specific subject: a name, a noun preceded by the determiner `the', or a pronoun such as `he'. General claims have subjects such as plural nouns without determiner, or with the  determiner `a'. When such a general claim occurs in the list of claims of a cooperative support, the general claim is drawn as supporting the support relation itself. These general are parsed as claims with conditions, where enthymeme resolution can create specific claims from each of the conditions by replacing `something' with the subject of the conclusion. 
+
+In AIF and tools based on this model, Walton's argument schemes are often used as a description the reasoning behind an argument supporting or attacking a claim. In our model the general claims are part of the argument itself, and they can be argued like any other claim. This allows us to express Toulmin's backing. 
+
+However, the structure for general rules can be more expressive; it can take into account exceptions, but also a logic like the cooperative and independent support relations for the conditions. This way you could express articles of law, like the definition of a tortious act, as a general claim and as such it could be used by enthymeme resolution to express assumptions in arguments.
+
+\paragraph{Argument mining}
+
+Compared to argument mining our implementation of HASL essentially uses the same three tasks described by Lippi et al.\cite{lippi2016argumentation}. Our approach depends on the ability to completely parse the argumentative text with its grammar: essentially every word has to fall into place. Most approaches do not depend on such a strict use of language, for good reason. It cannot be expected that approach can be expanded to encompass all possible argumentative expressions as they occur in the vast amount of written documents. Our approach depends on discourse markers, and although discourse markers are a very strong indicator for argumentative relations, they do not occur often\cite{lawrenceReed2015}.
+
+\paragraph{Argumentation software}
+Since our approach requires a completely parsable textual argument, we can use the information this provides, such as the identification of pronouns and the understanding of the structure of general and specific claims, to augment our argument diagram with the missing claims in anaphora. As far as we can tell this is the first approach that provides this level of understanding as a tool. Since it gives all possible interpretations of a textual argument, it can also help identify unexpected ambiguity or help identify the knowledge about the subject that is required to decide which interpretation is the intended one. For example, the intended meaning of `Tweety is a bird but Tweety is a penguin' can only be grasped when the semantic relation between birds and penguins is understood.

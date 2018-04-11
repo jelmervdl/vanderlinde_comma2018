@@ -61,19 +61,23 @@
 Human communicate and share their knowledge and understanding of their world by arguing with each other. If computers and humans could have a shared argumentation process, they could understand each other better.
 
 \paragraph{Current}
-Argumentation and artificial intelligence~\cite{vanEemerenEtal2014ch11}
+The structure of arguments has been analysed since Aristotle, trying to identify, understand and formalize the workings and structure of arguments which we so effortlessly use every day.
+
+Argumentation, from the perspective or Artificial Intelligence, has focussed mainly on the structure and evaluation of arguments: is this claim true, given these arguments either in favour or opposed it~\cite{vanEemerenEtal2014ch11}.
 
 \paragraph{Non-formal and formal argumentation theory}
-\cite{vanEemerenEtal2014,vanEemerenVerheij2017}
+Arguments occur in every form of human communication, in dialogue, monologue, explicitly written or almost subliminally implied while conveying information in any form. What all these forms do share is the concept of claims that are made, and that are attacked or supported by other claims, either in the forms of reasoning, or examples, or counter-examples. Formalising this structure is challenging, and the various approaches vary in their focus and formalism\cite{vanEemerenEtal2014,vanEemerenVerheij2017}. For example, Aristotle's syllogism created the dichotomy between minor and major premises, where the major premise serves as a generalized case (i.e. birds can fly) and the minor premise argues that this generalization is applicable (i.e. Tweety is a bird), and thus the conclusion is valid (i.e. Tweety can fly.).
 
-Walton started with documenting common structures~\cite{waltonReedMacagno2008} used in argumentation, marking their elements. Note that not all slots of these schemas can always be filled in based on the often terse argumentative texts. Walton's argument schemas also propose critical questions. Walton, and many others, defined such schemas based on the arguments they encountered. Consequently, there is no complete set of all schemas. The schemas are now often used for annotating the relation between parts of arguments, either automatically or using manual annotation.
+\paragraph{Toulmin's model}
+Toulmin\cite{toulmin1958} in a sense continues this work, formalising not only the minor and major premise and conclusion (which roughly translate to his datum, warrant and conclusion) but also dictates which additional elements should be present in a well formulated argument, and what outside of syllogisms the role of a warrant should be: each inference, i.e. each claim supporting a conclusion should be defensible by a warrant, a generalization why this conclusion may be concluded given the supporting datum. This generalization in turn should also be based in evidence, or in logic; it should be supported by a backing. Furthermore, the generalization almost always comes with a qualifier: how certain it is that the generalization is applicable in this situation, which range includes an analytical `all' in claims such as `all penguins are birds' to a statistical `most' in `most swans are white'. And last but not least the option for attack of a conclusion (i.e. a counter-argument) becomes part of the argument, uniting both support and attack in the same model. Toulmin's model of an argument dictates what may elements may be expected in an argument, either explicitly stated or answerable when asked. The elements described in this model form the basis for more formal approaches\cite{verheij2009}.
 
-Argumentation software~\cite{kirschnerEtal2003,verheij2007,scheuerEtal2010,noroozi2012argumentation}
+\paragraph{Walton argument schemas}
+Walton started with documenting common structures~\cite{waltonReedMacagno2008} used in argumentation, marking their elements. In a sense, this these schemas extend the formalisation of Toulmin's warrant, and extend the idea of Toulmin's model to more specific arguments in general: Walton's argument schemas also propose critical questions. Walton, and many others, defined such schemas based on the arguments they encountered. Consequently, there is no complete set of all schemas. The schemas are now often used for annotating the relation between parts of arguments, either automatically or using manual annotation.
 
 \paragraph{Argument mining}
-\cite{moens2017,peldszus2013argument,lippi2016argumentation,mochales2011argumentation}
+With the availability of large corpora of written and annotated text\cite{lawrenceReed2015} and advances in natural language processing, as well as the drive to automate the extraction of computer-understandable information, the challenge of argument mining has thrived. \cite{moens2017,peldszus2013argument,lippi2016argumentation,mochales2011argumentation}
 
-RST and argumentation schemas offer ways to add structure to arguments in text. Automating this step is the practise of discourse analysis. Approaches to discourse analysis usually aim at identifying various different types of discourse relations. However, we are only interested in a subset of such relations, namely those relevant for argumentation structure parsing. This smaller task is often referred to as Argument Mining~\cite{stabGurevych2017} and this task generally consists consists of multiple subtasks~\cite{lippi2016argumentation}:
+This extraction process of information is the practise of discourse analysis. Approaches to discourse analysis usually aim at identifying various different types of discourse relations. However, we are only interested in a subset of such relations, namely those relevant for argumentation structure parsing. This smaller task is often referred to as Argument Mining~\cite{stabGurevych2017} and this task generally consists consists of multiple subtasks~\cite{lippi2016argumentation}:
 
 \paragraph{Identification} The parts of text that are argumentative –- that may contain arguments -- need to be identified: In many texts only certain sentences or paragraphs of the text are argumentative; the rest may be informative, for example providing context. In it's essence this is a binary classification task. Some approaches combine this task with the next and directly detect and classify the argument components~\cite{stabGurevych2017}. In this case the classifier is also tasked with detecting the type of component (e.g. conclusion, minor or major premise, etcetera depending on the structural model used.)
 
@@ -83,13 +87,11 @@ RST and argumentation schemas offer ways to add structure to arguments in text. 
 
 Most approaches are based on text which has been annotated using RST and a predefined set of schemas. The rules used in the three subtasks are, either by hand or automatically, derived from these previously annotated texts to create a model which can apply the same annotation to new texts.
 
-
-
-Toumin's model~\cite{toulmin1958}
-Toulmin's influence~\cite{verheij2009}
+\paragraph{Argumentation software}
+Argumentation in Artificial Intelligence results in argumentation software, programs that often focus on understanding and teaching argumentation\cite{kirschnerEtal2003,scheuerEtal2010,noroozi2012argumentation}, as well as serve as a proof-of-concept of various formalisms,\cite{verheij2007}.
 
 \paragraph{Our idea}
-Our approach to understanding argumentative texts uses the more abstract structure \cite{peldszus2013argument} and we define a grammar for each of the occurring patterns in this abstract argument structure. From this grammar we develop a language for writing argumentative texts. The language itself is a limited subset of English.
+Our approach to understanding argumentative texts is based on a schematic representation of arguments in the form of boxes for claims and arrows for the support and attack relations between these claims \cite{peldszus2013argument,verheij2007}. Based on this schematic representation and its elements we define a grammar for a natural language on how to formulate these argumentative structures. Our human argumentative structure language (HASL) allows us to write argumentative text which can be directly interpreted as an argument diagram.
 
 \paragraph{Goals}
 Support and attack relations between arguments, warranted support in the form of general rules that support the step from premise to conclusion (i.e. major premise in syllogism). The ability to combine sentences to counter the need to restate premises (i.e. allow recursion). Anaphora resolution to avoid the need to restate the subjects. Enthymeme resolution to avoid the need to state many premises at all. 
@@ -107,13 +109,8 @@ We then test our implementation using the following examples:
 	\ex\label{ex:toulmin} Harry is a British subject because Harry was born in Bermuda and a man born in Bermuda is a British subject because of the following statutes and legal provisions but Harry has become a naturalized American.~\cite{toulmin1958}
 \end{exe}
 
-\paragraph{HASL/0}
-Our first experiment is HASL/0, which implements a grammar for combining the building blocks by restating premises in multiple sentences. Each of the building blocks yields its own partial argument structure, which are merged at the sentence level to form the complete argument. This implementation does a complete parse of the premises themselves as well to differentiate between major and minor premises.
-
-This first iteration of HASL is not a very human argument language. The need to restate premises as the only way to compose a larger argument is not ideal, and in many cases we much rather use conjunctives to compose more complex sentences. Other typically human phenomena such as the use of enthymemes and anaphora in argumentation is also not taken into account.
-
-\paragraph{HASL/1}
-We create a second iteration, HASL/1, which expands upon HASL/0 in the following ways:
+\paragraph{HASL}
+Our experimental human argument structure language (HASL) implements a grammar for combining the building blocks by restating premises in multiple sentences. Each of the building blocks yields its own partial argument structure, which are merged at the sentence level to form the complete argument. This implementation does a complete parse of the premises themselves as well to differentiate between major and minor premises.
 
 The grammar allows for nested argument structures: A premise that occurs on the right side of `because' can itself be the conclusion of a different part of the argument in the same sentence.
 
@@ -139,7 +136,7 @@ The language of HASL itself can be used to a new type of interface to the reason
 \input{discussion}
 
 \section{Conclusion}
-
+\input{conclusion}
 
 %
 %Diagramming tools (Araucaria, Reason!Able, ArguMed)
